@@ -33,29 +33,31 @@ Sub BI_cleanup()
     Dim i As Integer
     i = 1
     
-    'listing all the columns we want to delete
-    Dim strColsToDelete(12) As String
+    'listing all the columns we want to delete, omitting 'Curriculum'
+    Dim strColsToDelete(13) As String
     Dim var As Variant
     strColsToDelete(0) = "Outlier"
     strColsToDelete(1) = "FTE"
     strColsToDelete(2) = "Paid FTE"
     strColsToDelete(3) = "Course Pathway"
     strColsToDelete(4) = "Department"
-    strColsToDelete(5) = "Primary Instructor Type"
-    strColsToDelete(6) = "Term"
-    strColsToDelete(7) = "ICS Code"
-    strColsToDelete(8) = "Course Id Prefix"
-    strColsToDelete(9) = "Primary Instructor Id"
-    strColsToDelete(10) = "BC Course Discipline"
-    strColsToDelete(11) = "Gen Ed"
-    strColsToDelete(12) = "SummaryKey"
+    strColsToDelete(5) = "Credit Type"
+    strColsToDelete(6) = "Primary Instructor Type"
+    strColsToDelete(7) = "Term"
+    strColsToDelete(8) = "ICS Code"
+    strColsToDelete(9) = "Course Id Prefix"
+    strColsToDelete(10) = "Primary Instructor Id"
+    strColsToDelete(11) = "BC Course Discipline"
+    strColsToDelete(12) = "Gen Ed"
+    strColsToDelete(13) = "SummaryKey"
     
     'listing all the columns for which we want to change the number format
-    Dim strColsToNumFormat(3) As String
+    Dim strColsToNumFormat(4) As String
     strColsToNumFormat(0) = "RefNum"
     strColsToNumFormat(1) = "Sess"
     strColsToNumFormat(2) = "Bldg"
     strColsToNumFormat(3) = "Rm #"
+    strColsToNumFormat(4) = "Cost Center"
     
     'Turn off screen flickering as the macro runs
     Application.ScreenUpdating = False
