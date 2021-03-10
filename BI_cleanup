@@ -24,14 +24,19 @@ Sub BI_cleanup()
     
     Dim newName As String
     newName = folderPath & "/" & "BI export " & sMonth & " " & sDay & ".xlsx"
+    
+    Dim currentCellSorted As String
 
     ActiveWorkbook.SaveAs Filename:=newName, FileFormat:=xlOpenXMLWorkbook 'including FileFormat ensures this will save as xlsx even if it was originally csv
 
     'Kill originalName 'deletes the original file -- works on local folders, won't work on a network folder--why?
 
-    'create a counter
+    'create two counters
     Dim i As Integer
     i = 1
+    
+    Dim j As Integer
+    j = 1
     
     'listing all the columns we want to delete, omitting 'Curriculum'
     Dim strColsToDelete(13) As String
@@ -170,6 +175,19 @@ Sub BI_cleanup()
         .Apply
     End With
     
+    ' sort designators in alphbetical (ASCII-betical?) order
+    For i = 1 To lastCol
+        If Cells(1, i).Value = "Designator List" Then
+            For j = 2 To lastRow
+                currentCellSorted = SortString(Cells(j, i))
+                Cells(j, i) = currentCellSorted
+            Next
+        End If
+    Next
+    'reset the counters
+    i = 1
+    j = 1
+    
     'how to select columns by number rather than by letter (doing it by letter is much easier!)
     'autofits selected columns
     Columns(1).Resize(, lastCol).EntireColumn.AutoFit
@@ -179,13 +197,6 @@ Sub BI_cleanup()
     
 End Sub
 
-Sub TestingSort()
-    Dim sample As String
-    sample = "C6,ML,TR,RL,W2"
-    
-    sample = SortString(sample)
-
-End Sub
 Function SortString(ByVal val As String, Optional delim As String = ",") As String
     Dim arr() As String
     'the line below puts the two-character codes into an array, delimiting with commas
