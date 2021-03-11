@@ -189,6 +189,12 @@ Sub BI_cleanup()
     i = 1
     j = 1
     
+    'Filters to show only ENG1BASE and ENG1COPR
+    'The table in this sheet has been named Table1 by default
+    'unfortunately, Range.AutoFilter only lets you choose the field to filter by using an integer offset--you can't use the name. Boo.
+    'Division/Department is the 18th field as of this writing
+    ActiveWorkbook.Sheets("Sheet1").ListObjects("Table1").Range.AutoFilter Field:=18, Criteria1:=Array("ENG1BASE", "ENG1COPR"), Operator:=xlFilterValues
+    
     'how to select columns by number rather than by letter (doing it by letter is much easier!)
     'autofits selected columns
     Columns(1).Resize(, lastCol).EntireColumn.AutoFit
@@ -223,4 +229,5 @@ Sub SortArray(ByRef arr() As String)
         Next j
     Next i
 End Sub
+
 
