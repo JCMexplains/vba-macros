@@ -189,10 +189,22 @@ Sub BI_cleanup()
     i = 1
     j = 1
     
+     'find the column number of the Div Dept column and store it
+     
+     Dim divDeptCol As Integer
+     
+     For i = 1 To lastCol
+        If Cells(1, i).Value = "Div Dept" Then
+            divDeptCol = i
+            Exit For
+        End If
+    Next
+        'reset the counter
+    i = 1
+    
     'The table in this sheet has been named Table1 by default
-    'unfortunately, Range.AutoFilter only lets you choose the field to filter by using an integer offset--you can't use the name. Boo.
-    'Division/Department is the 19th field as of this writing
-    ActiveWorkbook.Sheets("Sheet1").ListObjects("Table1").Range.AutoFilter Field:=19, Criteria1:=Array("ENG1BASE", "ENG1COPR"), Operator:=xlFilterValues
+    'unfortunately, Range.AutoFilter only lets you choose the field to filter by using an integer offset, so we use the integer we found earlier
+    ActiveWorkbook.Sheets("Sheet1").ListObjects("Table1").Range.AutoFilter Field:=divDeptCol, Criteria1:=Array("ENG1BASE", "ENG1COPR"), Operator:=xlFilterValues
     
     'how to select columns by number rather than by letter (doing it by letter is much easier!)
     'autofits selected columns
@@ -228,5 +240,6 @@ Sub SortArray(ByRef arr() As String)
         Next j
     Next i
 End Sub
+
 
 
