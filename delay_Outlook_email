@@ -1,0 +1,24 @@
+Private Sub Application_ItemSend(ByVal Item As Object, Cancel As Boolean)
+
+    Dim SendAt As Variant
+    'since these values will never change during this macro, I am declaring them as constants with "Const" rather than as variables with "Dim"
+    Const SendTime As Variant = #7:30:00 AM# 'time in the morning to send all the delayed emails
+    Const EveningCutoff As Variant = #10:00:00 PM# 'start delaying emails at this time
+
+    ' If after today's EveningCutoff
+    If Now() > DateSerial(Year(Now), Month(Now), Day(Now)) + EveningCutoff Then
+        SendAt = DateSerial(Year(Now), Month(Now), Day(Now) + 1) + SendTime
+    ' Else if before we start sending again this morning
+    ElseIf Now() < DateSerial(Year(Now), Month(Now), Day(Now)) + SendTime Then
+        SendAt = DateSerial(Year(Now), Month(Now), Day(Now)) + SendTime
+    'Else send now (or more precisely, do not change send time--if I have set a manual deferred delivery before calling this script, it will remain; see below)
+    Else
+        SendAt = Now()
+    End If
+
+    'Item is the email we passed into this macro. DeferredDeliveryTime is when it will actually get delivered.
+    'The reason to test is so that if I have set a MANUAL deferred delivery time before pressing Send and triggering this macro, the manual time will not be erased
+    If SendAt <> Now() Then
+        Item.DeferredDeliveryTime = SendAt
+   End If
+End Sub
