@@ -151,25 +151,26 @@ Sub BI_cleanup()
         'reset the counter
     i = 1
     
-    'room numbers all come out of BI with one trailing zero, so remove it
-     For i = 1 To lastCol
-        If Cells(1, i).Value = "Rm #" Then
-            ActiveSheet.Range(Cells(2, i), Cells(lastRow, i)).Select
-            With Selection
-                'currently does nothing
-            End With
-            Exit For
-        End If
-    Next
-        'reset the counter
-    i = 1
-    
     'formats instructor names to have a space after the comma
     'the underscore character lets you break a long single-line statement into multiple lines
     For i = 1 To lastCol
         If Cells(1, i).Value = "Instructor Name" Then
             ActiveSheet.Range(Cells(2, i), Cells(lastRow, i)).Select
             Selection.Replace What:=",", Replacement:=", ", LookAt:=xlPart, _
+                SearchOrder:=xlByRows, MatchCase:=False, SearchFormat:=False, _
+                ReplaceFormat:=False, FormulaVersion:=xlReplaceFormula2
+            Exit For
+        End If
+    Next
+        'reset the counter
+    i = 1
+    
+    'cleans up Delivery Method names, e.g. from RemoteLearningBlended to Remote Blended
+    'the underscore character lets you break a long single-line statement into multiple lines
+    For i = 1 To lastCol
+        If Cells(1, i).Value = "Delivery Method" Then
+            ActiveSheet.Range(Cells(2, i), Cells(lastRow, i)).Select
+            Selection.Replace What:="RemoteLearning", Replacement:="Remote ", LookAt:=xlPart, _
                 SearchOrder:=xlByRows, MatchCase:=False, SearchFormat:=False, _
                 ReplaceFormat:=False, FormulaVersion:=xlReplaceFormula2
             Exit For
