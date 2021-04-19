@@ -39,7 +39,7 @@ Sub BI_cleanup()
     j = 1
     
     'listing all the columns we want to delete, omitting 'Curriculum'
-    Dim strColsToDelete(14) As String
+    Dim strColsToDelete(16) As String
     Dim var As Variant
     strColsToDelete(0) = "Outlier"
     strColsToDelete(1) = "FTE"
@@ -56,6 +56,8 @@ Sub BI_cleanup()
     strColsToDelete(12) = "Gen Ed"
     strColsToDelete(13) = "SummaryKey"
     strColsToDelete(14) = "Division"
+    strColsToDelete(15) = "Credit Hrs"
+    strColsToDelete(16) = "Std Cntct Hrs"
     
     'listing all the columns for which we want to change the number format
     Dim strColsToNumFormat(4) As String
@@ -143,6 +145,19 @@ Sub BI_cleanup()
         If Cells(1, i).Value = "Enrolled" Then
             ActiveSheet.Range(Cells(2, i), Cells(lastRow, i)).Select
             Selection.FormatConditions.AddColorScale ColorScaleType:=3
+            Exit For
+        End If
+    Next
+        'reset the counter
+    i = 1
+    
+    'room numbers all come out of BI with one trailing zero, so remove it
+     For i = 1 To lastCol
+        If Cells(1, i).Value = "Rm #" Then
+            ActiveSheet.Range(Cells(2, i), Cells(lastRow, i)).Select
+            With Selection
+                'currently does nothing
+            End With
             Exit For
         End If
     Next
