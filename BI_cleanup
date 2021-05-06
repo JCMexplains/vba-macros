@@ -59,13 +59,6 @@ Sub BI_cleanup()
     strColsToDelete(15) = "Credit Hrs"
     strColsToDelete(16) = "Std Cntct Hrs"
     
-    'listing all the columns for which we want to change the number format
-    Dim strColsToNumFormat(4) As String
-    strColsToNumFormat(0) = "RefNum"
-    strColsToNumFormat(1) = "Sess"
-    strColsToNumFormat(2) = "Bldg"
-    strColsToNumFormat(3) = "Rm #"
-    strColsToNumFormat(4) = "Cost Center"
     
     'Turn off screen flickering as the macro runs
     Application.ScreenUpdating = False
@@ -95,6 +88,8 @@ Sub BI_cleanup()
     
    'delete some unneeded columns
    'deleting by the name in the header rather than by column number or letter because columns seem to keep getting added to the report
+
+    
     For Each var In strColsToDelete
         For i = 1 To lastCol
             If Cells(1, i).Value = var Then
@@ -104,25 +99,11 @@ Sub BI_cleanup()
                 Exit For
             End If
         Next
-        'reset the counter
-        i = 1
     Next var
     
-    'changing several columns from "number stored as text" to regular numbers
-    For Each var In strColsToNumFormat
-        For i = 1 To lastCol
-            If Cells(1, i).Value = var Then
-                ActiveSheet.Range(Cells(2, i), Cells(lastRow, i)).Select
-                With Selection
-                    .NumberFormat = "General"
-                    .Value = .Value
-                End With
-                Exit For
-            End If
-        Next
-            'reset the counter
-        i = 1
-    Next var
+    'calling another Sub, which goes through all cells and changes any "numbers stored as text" to regular numbers
+    Call fixNumberStoredAsText
+
     
     'find the Sess column and format it
     For i = 1 To lastCol
@@ -137,8 +118,7 @@ Sub BI_cleanup()
             Exit For
         End If
     Next
-        'reset the counter
-    i = 1
+
     
     'find the Enrolled column and format it
      For i = 1 To lastCol
@@ -148,8 +128,7 @@ Sub BI_cleanup()
             Exit For
         End If
     Next
-        'reset the counter
-    i = 1
+
     
     'formats instructor names to have a space after the comma
     'the underscore character lets you break a long single-line statement into multiple lines
@@ -162,8 +141,7 @@ Sub BI_cleanup()
             Exit For
         End If
     Next
-        'reset the counter
-    i = 1
+
     
     'cleans up Delivery Method names, e.g. from RemoteLearningBlended to Remote Blended
     'the underscore character lets you break a long single-line statement into multiple lines
@@ -176,8 +154,7 @@ Sub BI_cleanup()
             Exit For
         End If
     Next
-        'reset the counter
-    i = 1
+
     
     'sort by instructor name
     ActiveWorkbook.Worksheets("Sheet1").ListObjects("Table1").Sort.SortFields.Clear
@@ -201,9 +178,7 @@ Sub BI_cleanup()
             Next
         End If
     Next
-    'reset the counters
-    i = 1
-    j = 1
+
     
      'find the column number of the Div Dept column and store it
      
@@ -215,8 +190,6 @@ Sub BI_cleanup()
             Exit For
         End If
     Next
-        'reset the counter
-    i = 1
     
     'The table in this sheet has been named Table1 by default
     'unfortunately, Range.AutoFilter only lets you choose the field to filter by using an integer offset, so we use the integer we found earlier
@@ -256,6 +229,28 @@ Sub SortArray(ByRef arr() As String)
         Next j
     Next i
 End Sub
+
+Sub fixNumberStoredAsText()
+    
+Dim aCells As Variant
+Dim x As Long
+Dim y As Long
+
+aCells = Sheets("Sheet1").UsedRange 'UsedRange includes any cell that has ever had a value in it
+
+For x = 1 To UBound(aCells, 1) 'the upper bound is built in--Excel knows it
+  For y = 1 To UBound(aCells, 2)
+    If IsNumeric(aCells(x, y)) And WorksheetFunction.IsText(aCells(x, y)) Then
+        With Sheets("Sheet1").Cells(x, y)
+            .NumberFormat = "General"
+            .Value = .Value 'this is a kind of magic I see often. Somehow, setting something's value to its value changes numbers stored as text to regular numbers
+        End With
+    End If
+  Next y
+Next x
+
+End Sub
+
 
 
 
