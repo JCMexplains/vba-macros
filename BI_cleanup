@@ -1,14 +1,15 @@
 Option Explicit
+
 Sub BI_cleanup()
     
     ' BI_cleanup Macro
     ' Clean up export from Power BI
     
     ' variables for the last used row and the last used column
-    Dim lastRow     As Long
+    Dim lastRow     As Integer
     lastRow = Cells(Rows.Count, 1).End(xlUp).Row
     'gets the last used row
-    Dim lastCol     As Long
+    Dim lastCol     As Integer
     lastCol = Cells(3, Columns.Count).End(xlToLeft).Column
     'gets the last used column. at this point row 3 is the header row, so we look there
     
@@ -83,13 +84,13 @@ Sub BI_cleanup()
     Rows("1:1").Select
     'documentation for this replace function: https://docs.microsoft.com/en-us/office/vba/api/excel.range.replace
     Selection.Replace What:="Curriculum.", Replacement:="", LookAt:=xlPart, _
-    SearchOrder:=xlByRows, MatchCase:=False, SearchFormat:=False, _
-    ReplaceFormat:=False, FormulaVersion:=xlReplaceFormula2
+                      SearchOrder:=xlByRows, MatchCase:=False, SearchFormat:=False, _
+                      ReplaceFormat:=False, FormulaVersion:=xlReplaceFormula2
     
     'now replace "Division Department" with a shorter version. Row 1 is already selected
     Selection.Replace What:="Division Department", Replacement:="Div Dept", LookAt:=xlPart, _
-    SearchOrder:=xlByRows, MatchCase:=False, SearchFormat:=False, _
-    ReplaceFormat:=False, FormulaVersion:=xlReplaceFormula2
+                      SearchOrder:=xlByRows, MatchCase:=False, SearchFormat:=False, _
+                      ReplaceFormat:=False, FormulaVersion:=xlReplaceFormula2
     
     'delete some unneeded columns
     'deleting by the name in the header rather than by column number or letter because columns seem to keep getting added to the report
@@ -97,15 +98,17 @@ Sub BI_cleanup()
         For i = 1 To lastCol
             If Cells(1, i).Value = var Then
                 Columns(i).Delete
-                lastCol = lastCol - 1        'we now have one fewer used column, so we can decrement this variable
+                lastCol = lastCol - 1            'we now have one fewer used column, so we can decrement this variable
                 'once we find what we want, we can exit this loop
                 Exit For
             End If
         Next
     Next var
     
+
+    
     'calling another Sub, which goes through all cells and changes any "numbers stored as text" to regular numbers
-    Call fixNumberStoredAsText
+    Call FixNumberStoredAsText
     
     'find the Sess column and format it
     For i = 1 To lastCol
@@ -177,8 +180,16 @@ Sub BI_cleanup()
         End If
     Next
     
-    'find the column number of the Div Dept column and store it
+    ' calls a Sub that will remove the trailing zero from room numbers
+    For i = 1 To lastCol
+        If Cells(1, i).Value = "Rm #" Then
+            Call FormatRoomNumbers(i, lastRow)
+            'once we find what we want, we can exit this loop
+            Exit For
+        End If
+    Next
     
+    'find the column number of the Div Dept column and store it
     Dim divDeptCol  As Integer
     
     For i = 1 To lastCol
@@ -208,10 +219,11 @@ Function SortString(ByVal val As String, Optional delim As String = ",") As Stri
     SortArray arr
     SortString = Replace(Join(arr, delim), delim, delim & " ")
 End Function
+
 Sub SortArray(ByRef arr() As String)
     Dim temp        As Variant
-    Dim i           As Long
-    Dim j           As Long
+    Dim i           As Integer
+    Dim j           As Integer
     
     For i = LBound(arr) To UBound(arr) - 1
         For j = i + 1 To UBound(arr)
@@ -227,26 +239,48 @@ Sub SortArray(ByRef arr() As String)
     Next i
 End Sub
 
-Sub fixNumberStoredAsText()
+Sub FixNumberStoredAsText()
     
     Dim aCells      As Variant
-    Dim x           As Long
-    Dim y           As Long
+    Dim x           As Integer
+    Dim y           As Integer
     
-    aCells = Sheets("Sheet1").UsedRange        'UsedRange includes any cell that has ever had a value in it
+    aCells = Sheets("Sheet1").UsedRange          'UsedRange includes any cell that has ever had a value in it
     
-    For x = 1 To UBound(aCells, 1)        'the upper bound is built in--Excel knows it
+    For x = 1 To UBound(aCells, 1)               'the upper bound is built in--Excel knows it
         For y = 1 To UBound(aCells, 2)
             If IsNumeric(aCells(x, y)) And WorksheetFunction.IsText(aCells(x, y)) Then
                 'first condition tests if a cell "can be evaluated as a number" (not the same as "IS a number"), second condition uses a built-in worksheet function to check if the cell is text
                 'when both conditions are true, that's a number stored as text
                 With Sheets("Sheet1").Cells(x, y)
                     .NumberFormat = "General"
-                    .Value = .Value        'this is a kind of magic I see often. Somehow, setting something's value to its value changes numbers stored as text to regular numbers
+                    .Value = .Value              'this is a kind of magic I see often. Somehow, setting something's value to its value changes numbers stored as text to regular numbers
                 End With
             End If
         Next y
     Next x
     
 End Sub
+
+Sub FormatRoomNumbers(targetColumn As Integer, lastRow As Integer)
+    ' As Integer throws an error if the argument coming in is not an integer
+
+    Dim regexOne As Object
+    Dim roomNum As String
+    Dim theMatches As Object
+    Dim i As Integer
+    i = 1
+
+    Set regexOne = New RegExp
+    
+    'this regex will match three digits followed by a zero
+    regexOne.Pattern = "(\d{3})0"
+    
+    For i = 1 To lastRow
+        roomNum = Cells(i, targetColumn).Value
+        Cells(i, targetColumn).Value = regexOne.Replace(roomNum, "$1")
+    Next
+
+End Sub
+
 
