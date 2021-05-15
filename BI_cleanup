@@ -6,10 +6,10 @@ Sub BI_cleanup()
     ' Clean up export from Power BI
     
     ' variables for the last used row and the last used column
-    Dim lastRow     As Integer
+    Dim lastRow     As Long
     lastRow = Cells(Rows.Count, 1).End(xlUp).Row
     'gets the last used row
-    Dim lastCol     As Integer
+    Dim lastCol     As Long
     lastCol = Cells(3, Columns.Count).End(xlToLeft).Column
     'gets the last used column. at this point row 3 is the header row, so we look there
     
@@ -17,54 +17,43 @@ Sub BI_cleanup()
     folderPath = Application.ActiveWorkbook.Path
     'path without the file name; does not include the final forward slash
     'There is a difference between ActiveWorkbook and ThisWorkbook--Google it
-    
-    Dim sMonth      As String
-    sMonth = CStr(Month(Date))
-    
-    Dim sDay        As String
-    sDay = CStr(Day(Date))
-    
-    Dim originalName As String
-    originalName = Application.ActiveWorkbook.FullName
-    'this gets the full path INCLUDING the file name
-    
+
+
     Dim newName     As String
-    newName = folderPath & "/" & "BI export " & sMonth & " " & sDay & ".xlsx"
-    
+    newName = folderPath & "/" & "BI export " & MonthName(Month(Date)) & " " & WeekdayName(Weekday(Date)) & ".xlsx"
+
     Dim currentCellSorted As String
-    
+
     ActiveWorkbook.SaveAs Filename:=newName, FileFormat:=xlOpenXMLWorkbook
     'including FileFormat ensures this will save as xlsx even if it was originally csv
     
     'Kill originalName 'deletes the original file -- works on local folders, won't work on a network folder--why
     
     'create two counters
-    Dim i           As Integer
-    i = 1
+    Dim firstCounter           As Long
     
-    Dim j           As Integer
-    j = 1
+    Dim secondCounter           As Long
     
     'listing all the columns we want to delete, omitting the word 'Curriculum' since I'm going to delete that
-    Dim strColsToDelete(16) As String
+    Dim colsToDelete(16) As String
     Dim var         As Variant
-    strColsToDelete(0) = "Outlier"
-    strColsToDelete(1) = "FTE"
-    strColsToDelete(2) = "Paid FTE"
-    strColsToDelete(3) = "Course Pathway"
-    strColsToDelete(4) = "Department"
-    strColsToDelete(5) = "Credit Type"
-    strColsToDelete(6) = "Primary Instructor Type"
-    strColsToDelete(7) = "Term"
-    strColsToDelete(8) = "ICS Code"
-    strColsToDelete(9) = "Course Id Prefix"
-    strColsToDelete(10) = "Primary Instructor Id"
-    strColsToDelete(11) = "BC Course Discipline"
-    strColsToDelete(12) = "Gen Ed"
-    strColsToDelete(13) = "SummaryKey"
-    strColsToDelete(14) = "Division"
-    strColsToDelete(15) = "Credit Hrs"
-    strColsToDelete(16) = "Std Cntct Hrs"
+    colsToDelete(0) = "Outlier"
+    colsToDelete(1) = "FTE"
+    colsToDelete(2) = "Paid FTE"
+    colsToDelete(3) = "Course Pathway"
+    colsToDelete(4) = "Department"
+    colsToDelete(5) = "Credit Type"
+    colsToDelete(6) = "Primary Instructor Type"
+    colsToDelete(7) = "Term"
+    colsToDelete(8) = "ICS Code"
+    colsToDelete(9) = "Course Id Prefix"
+    colsToDelete(10) = "Primary Instructor Id"
+    colsToDelete(11) = "BC Course Discipline"
+    colsToDelete(12) = "Gen Ed"
+    colsToDelete(13) = "SummaryKey"
+    colsToDelete(14) = "Division"
+    colsToDelete(15) = "Credit Hrs"
+    colsToDelete(16) = "Std Cntct Hrs"
     
     'Turn off screen flickering as the macro runs
     Application.ScreenUpdating = False
@@ -83,7 +72,8 @@ Sub BI_cleanup()
     'changes names of columns to more human-friendly names, replacing anything of the form Curriculum.xyz with xyz
     Rows("1:1").Select
     'documentation for this replace function: https://docs.microsoft.com/en-us/office/vba/api/excel.range.replace
-    Selection.Replace What:="Curriculum.", Replacement:="", LookAt:=xlPart, _
+    'vbNullString is preferred over "" for indicating that you are replacing with an empty string
+    Selection.Replace What:="Curriculum.", Replacement:=vbNullString, LookAt:=xlPart, _
                       SearchOrder:=xlByRows, MatchCase:=False, SearchFormat:=False, _
                       ReplaceFormat:=False, FormulaVersion:=xlReplaceFormula2
     
@@ -94,10 +84,10 @@ Sub BI_cleanup()
     
     'delete some unneeded columns
     'deleting by the name in the header rather than by column number or letter because columns seem to keep getting added to the report
-    For Each var In strColsToDelete
-        For i = 1 To lastCol
-            If Cells(1, i).Value = var Then
-                Columns(i).Delete
+    For Each var In colsToDelete
+        For firstCounter = 1 To lastCol
+            If Cells(1, firstCounter).Value = var Then
+                Columns(firstCounter).Delete
                 lastCol = lastCol - 1            'we now have one fewer used column, so we can decrement this variable
                 'once we find what we want, we can exit this loop
                 Exit For
@@ -108,12 +98,12 @@ Sub BI_cleanup()
 
     
     'calling another Sub, which goes through all cells and changes any "numbers stored as text" to regular numbers
-    Call FixNumberStoredAsText
+    FixNumberStoredAsText
     
     'find the Sess column and format it
-    For i = 1 To lastCol
-        If Cells(1, i).Value = "Sess" Then
-            ActiveSheet.Range(Cells(2, i), Cells(lastRow, i)).Select
+    For firstCounter = 1 To lastCol
+        If Cells(1, firstCounter).Value = "Sess" Then
+            ActiveSheet.Range(Cells(2, firstCounter), Cells(lastRow, firstCounter)).Select
             Selection.FormatConditions.AddDatabar
             With Selection.FormatConditions(1)
                 .MinPoint.Modify newtype:=xlConditionValueAutomaticMin
@@ -125,9 +115,9 @@ Sub BI_cleanup()
     Next
     
     'find the Enrolled column and format it
-    For i = 1 To lastCol
-        If Cells(1, i).Value = "Enrolled" Then
-            ActiveSheet.Range(Cells(2, i), Cells(lastRow, i)).Select
+    For firstCounter = 1 To lastCol
+        If Cells(1, firstCounter).Value = "Enrolled" Then
+            ActiveSheet.Range(Cells(2, firstCounter), Cells(lastRow, firstCounter)).Select
             Selection.FormatConditions.AddColorScale ColorScaleType:=3
             Exit For
         End If
@@ -135,9 +125,9 @@ Sub BI_cleanup()
     
     'formats instructor names to have a space after the comma
     'the underscore character lets you break a long single-line statement into multiple lines
-    For i = 1 To lastCol
-        If Cells(1, i).Value = "Instructor Name" Then
-            ActiveSheet.Range(Cells(2, i), Cells(lastRow, i)).Select
+    For firstCounter = 1 To lastCol
+        If Cells(1, firstCounter).Value = "Instructor Name" Then
+            ActiveSheet.Range(Cells(2, firstCounter), Cells(lastRow, firstCounter)).Select
             Selection.Replace What:=",", Replacement:=", ", LookAt:=xlPart, _
                               SearchOrder:=xlByRows, MatchCase:=False, SearchFormat:=False, _
                               ReplaceFormat:=False, FormulaVersion:=xlReplaceFormula2
@@ -147,9 +137,9 @@ Sub BI_cleanup()
     
     'cleans up Delivery Method names, e.g. from RemoteLearningBlended to Remote Blended
     'the underscore character lets you break a long single-line statement into multiple lines
-    For i = 1 To lastCol
-        If Cells(1, i).Value = "Delivery Method" Then
-            ActiveSheet.Range(Cells(2, i), Cells(lastRow, i)).Select
+    For firstCounter = 1 To lastCol
+        If Cells(1, firstCounter).Value = "Delivery Method" Then
+            ActiveSheet.Range(Cells(2, firstCounter), Cells(lastRow, firstCounter)).Select
             Selection.Replace What:="RemoteLearning", Replacement:="Remote ", LookAt:=xlPart, _
                               SearchOrder:=xlByRows, MatchCase:=False, SearchFormat:=False, _
                               ReplaceFormat:=False, FormulaVersion:=xlReplaceFormula2
@@ -171,30 +161,30 @@ Sub BI_cleanup()
     End With
     
     ' sort designators in alphbetical (ASCII-betical?) order
-    For i = 1 To lastCol
-        If Cells(1, i).Value = "Designator List" Then
-            For j = 2 To lastRow
-                currentCellSorted = SortString(Cells(j, i))
-                Cells(j, i) = currentCellSorted
+    For firstCounter = 1 To lastCol
+        If Cells(1, firstCounter).Value = "Designator List" Then
+            For secondCounter = 2 To lastRow
+                currentCellSorted = SortString(Cells(secondCounter, firstCounter))
+                Cells(secondCounter, firstCounter) = currentCellSorted
             Next
         End If
     Next
     
     ' calls a Sub that will remove the trailing zero from room numbers
-    For i = 1 To lastCol
-        If Cells(1, i).Value = "Rm #" Then
-            Call FormatRoomNumbers(i, lastRow)
+    For firstCounter = 1 To lastCol
+        If Cells(1, firstCounter).Value = "Rm #" Then
+            FormatRoomNumbers firstCounter, lastRow
             'once we find what we want, we can exit this loop
             Exit For
         End If
     Next
     
     'find the column number of the Div Dept column and store it
-    Dim divDeptCol  As Integer
+    Dim divDeptCol  As Long
     
-    For i = 1 To lastCol
-        If Cells(1, i).Value = "Div Dept" Then
-            divDeptCol = i
+    For firstCounter = 1 To lastCol
+        If Cells(1, firstCounter).Value = "Div Dept" Then
+            divDeptCol = firstCounter
             Exit For
         End If
     Next
@@ -212,73 +202,77 @@ Sub BI_cleanup()
     
 End Sub
 
-Function SortString(ByVal val As String, Optional delim As String = ",") As String
-    Dim arr()       As String
-    'the line below puts the two-character codes into an array, delimiting with commas
-    arr() = Split(Replace(val, " ", ""), delim)
-    SortArray arr
-    SortString = Replace(Join(arr, delim), delim, delim & " ")
-End Function
-
-Sub SortArray(ByRef arr() As String)
-    Dim temp        As Variant
-    Dim i           As Integer
-    Dim j           As Integer
+Function SortString(ByVal toSort As String) As String
+        Dim substrings       As Variant
+        Dim commaDelim As String
+        commaDelim = ","
+        
+        'the line below puts the two-character codes into an array, delimiting with commas
+        substrings = Split(Replace(toSort, " ", vbNullString), commaDelim)
+        substrings = SortArray(substrings)
+        
+        ' whatever is assigned to the name of the function is what gets returned
+        SortString = Replace(Join(substrings, commaDelim), commaDelim, commaDelim & " ")
+    End Function
     
-    For i = LBound(arr) To UBound(arr) - 1
-        For j = i + 1 To UBound(arr)
-            'Trim strips leading and trailing spaces
-            'this is implementing a bubble sort, i believe
-            If arr(i) > arr(j) Then
-                'the three lines below swap i and j
-                temp = arr(i)
-                arr(i) = arr(j)
-                arr(j) = temp
-            End If
-        Next j
-    Next i
-End Sub
+Function SortArray(ByRef substrings As Variant) As Variant
+        Dim temp        As Variant
+        Dim thirdCounter           As Long
+        Dim fourthCounter           As Long
+        
+        For thirdCounter = LBound(substrings) To UBound(substrings) - 1
+            For fourthCounter = thirdCounter + 1 To UBound(substrings)
+                'Trim strips leading and trailing spaces
+                'this is implementing a bubble sort, i believe
+                If substrings(thirdCounter) > substrings(fourthCounter) Then
+                    'the three lines below swap thirdCounter and fourthCounter
+                    temp = substrings(thirdCounter)
+                    substrings(thirdCounter) = substrings(fourthCounter)
+                    substrings(fourthCounter) = temp
+                End If
+            Next fourthCounter
+        Next thirdCounter
+        SortArray = substrings
+End Function
 
 Sub FixNumberStoredAsText()
     
-    Dim aCells      As Variant
-    Dim x           As Integer
-    Dim y           As Integer
+    Dim cellsToExamine      As Variant
+    Dim fifthCounter           As Long
+    Dim sixthCounter           As Long
     
-    aCells = Sheets("Sheet1").UsedRange          'UsedRange includes any cell that has ever had a value in it
+    cellsToExamine = Sheets("Sheet1").UsedRange          'UsedRange includes any cell that has ever had a value in it
     
-    For x = 1 To UBound(aCells, 1)               'the upper bound is built in--Excel knows it
-        For y = 1 To UBound(aCells, 2)
-            If IsNumeric(aCells(x, y)) And WorksheetFunction.IsText(aCells(x, y)) Then
+    For fifthCounter = 1 To UBound(cellsToExamine, 1)               'the upper bound is built in--Excel knows it
+        For sixthCounter = 1 To UBound(cellsToExamine, 2)
+            If IsNumeric(cellsToExamine(fifthCounter, sixthCounter)) And WorksheetFunction.IsText(cellsToExamine(fifthCounter, sixthCounter)) Then
                 'first condition tests if a cell "can be evaluated as a number" (not the same as "IS a number"), second condition uses a built-in worksheet function to check if the cell is text
                 'when both conditions are true, that's a number stored as text
-                With Sheets("Sheet1").Cells(x, y)
+                With Sheets("Sheet1").Cells(fifthCounter, sixthCounter)
                     .NumberFormat = "General"
                     .Value = .Value              'this is a kind of magic I see often. Somehow, setting something's value to its value changes numbers stored as text to regular numbers
                 End With
             End If
-        Next y
-    Next x
+        Next sixthCounter
+    Next fifthCounter
     
 End Sub
 
-Sub FormatRoomNumbers(targetColumn As Integer, lastRow As Integer)
-    ' As Integer throws an error if the argument coming in is not an integer
+Sub FormatRoomNumbers(targetColumn As Long, ByVal lastRow As Long)
+    ' As Long throws an error if the argument coming in is not an integer
 
     Dim regexOne As Object
     Dim roomNum As String
-    Dim theMatches As Object
-    Dim i As Integer
-    i = 1
+    Dim seventhCounter As Long
 
     Set regexOne = New RegExp
     
     'this regex will match three digits followed by a zero
     regexOne.Pattern = "(\d{3})0"
     
-    For i = 1 To lastRow
-        roomNum = Cells(i, targetColumn).Value
-        Cells(i, targetColumn).Value = regexOne.Replace(roomNum, "$1")
+    For seventhCounter = 1 To lastRow
+        roomNum = Cells(seventhCounter, targetColumn).Value
+        Cells(seventhCounter, targetColumn).Value = regexOne.Replace(roomNum, "$1")
     Next
 
 End Sub
