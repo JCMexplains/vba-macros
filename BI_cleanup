@@ -1,17 +1,23 @@
+'@IgnoreModule ModuleWithoutFolder, ImplicitActiveSheetReference, ImplicitActiveWorkbookReference
 Option Explicit
 
-Sub BI_cleanup()
+'@EntryPoint
+Public Sub BI_cleanup()
     
     ' BI_cleanup Macro
     ' Clean up export from Power BI
     
     ' variables for the last used row and the last used column
     Dim lastRow     As Long
-    lastRow = Cells(Rows.Count, 1).End(xlUp).Row
-    'gets the last used row
     Dim lastCol     As Long
-    lastCol = Cells(3, Columns.Count).End(xlToLeft).Column
-    'gets the last used column. at this point row 3 is the header row, so we look there
+    
+    With Sheet1
+        lastRow = Cells(Rows.Count, 1).End(xlUp).Row
+        'gets the last used row
+        
+        lastCol = Cells(3, Columns.Count).End(xlToLeft).Column
+        'gets the last used column. at this point row 3 is the header row, so we look there
+    End With
     
     Dim folderPath  As String
     folderPath = Application.ActiveWorkbook.Path
@@ -202,48 +208,48 @@ Sub BI_cleanup()
     
 End Sub
 
-Function SortString(ByVal toSort As String) As String
-        Dim substrings       As Variant
-        Dim commaDelim As String
-        commaDelim = ","
+Public Function SortString(ByVal toSort As String) As String
+    Dim substrings       As Variant
+    Dim commaDelim As String
+    commaDelim = ","
         
-        'the line below puts the two-character codes into an array, delimiting with commas
-        substrings = Split(Replace(toSort, " ", vbNullString), commaDelim)
-        substrings = SortArray(substrings)
+    'the line below puts the two-character codes into an array, delimiting with commas
+    substrings = Split(Replace(toSort, " ", vbNullString), commaDelim)
+    substrings = SortArray(substrings)
         
-        ' whatever is assigned to the name of the function is what gets returned
-        SortString = Replace(Join(substrings, commaDelim), commaDelim, commaDelim & " ")
-    End Function
-    
-Function SortArray(ByRef substrings As Variant) As Variant
-        Dim temp        As Variant
-        Dim thirdCounter           As Long
-        Dim fourthCounter           As Long
-        
-        For thirdCounter = LBound(substrings) To UBound(substrings) - 1
-            For fourthCounter = thirdCounter + 1 To UBound(substrings)
-                'Trim strips leading and trailing spaces
-                'this is implementing a bubble sort, i believe
-                If substrings(thirdCounter) > substrings(fourthCounter) Then
-                    'the three lines below swap thirdCounter and fourthCounter
-                    temp = substrings(thirdCounter)
-                    substrings(thirdCounter) = substrings(fourthCounter)
-                    substrings(fourthCounter) = temp
-                End If
-            Next fourthCounter
-        Next thirdCounter
-        SortArray = substrings
+    ' whatever is assigned to the name of the function is what gets returned
+    SortString = Replace(Join(substrings, commaDelim), commaDelim, commaDelim & " ")
 End Function
 
-Sub FixNumberStoredAsText()
+Public Function SortArray(ByRef substrings As Variant) As Variant
+    Dim temp        As Variant
+    Dim thirdCounter           As Long
+    Dim fourthCounter           As Long
+        
+    For thirdCounter = LBound(substrings) To UBound(substrings) - 1
+        For fourthCounter = thirdCounter + 1 To UBound(substrings)
+            'Trim strips leading and trailing spaces
+            'this is implementing a bubble sort, i believe
+            If substrings(thirdCounter) > substrings(fourthCounter) Then
+                'the three lines below swap thirdCounter and fourthCounter
+                temp = substrings(thirdCounter)
+                substrings(thirdCounter) = substrings(fourthCounter)
+                substrings(fourthCounter) = temp
+            End If
+        Next fourthCounter
+    Next thirdCounter
+    SortArray = substrings
+End Function
+
+Public Sub FixNumberStoredAsText()
     
     Dim cellsToExamine      As Variant
     Dim fifthCounter           As Long
     Dim sixthCounter           As Long
     
-    cellsToExamine = Sheets("Sheet1").UsedRange          'UsedRange includes any cell that has ever had a value in it
+    cellsToExamine = Sheets("Sheet1").UsedRange  'UsedRange includes any cell that has ever had a value in it
     
-    For fifthCounter = 1 To UBound(cellsToExamine, 1)               'the upper bound is built in--Excel knows it
+    For fifthCounter = 1 To UBound(cellsToExamine, 1) 'the upper bound is built in--Excel knows it
         For sixthCounter = 1 To UBound(cellsToExamine, 2)
             If IsNumeric(cellsToExamine(fifthCounter, sixthCounter)) And WorksheetFunction.IsText(cellsToExamine(fifthCounter, sixthCounter)) Then
                 'first condition tests if a cell "can be evaluated as a number" (not the same as "IS a number"), second condition uses a built-in worksheet function to check if the cell is text
@@ -258,7 +264,7 @@ Sub FixNumberStoredAsText()
     
 End Sub
 
-Sub FormatRoomNumbers(targetColumn As Long, ByVal lastRow As Long)
+Public Sub FormatRoomNumbers(ByVal targetColumn As Long, ByVal lastRow As Long)
     ' As Long throws an error if the argument coming in is not an integer
 
     Dim regexOne As Object
