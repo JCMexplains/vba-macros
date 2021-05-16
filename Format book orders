@@ -1,0 +1,82 @@
+Option Explicit
+
+'@EntryPoint
+Public Sub Format_book_orders()
+    '
+    ' Format_book_orders Macro
+    
+    Dim folderPath  As String
+    folderPath = Application.ActiveWorkbook.Path
+    'path without the file name; does not include the final forward slash
+    'There is a difference between ActiveWorkbook and ThisWorkbook--Google it
+    
+    Dim newName     As String
+    newName = folderPath & "/" & "Book orders " & MonthName(Month(Date)) & " " & Day(Date) & ".xlsx"
+
+    ActiveWorkbook.SaveAs Filename:=newName, FileFormat:=xlOpenXMLWorkbook
+    'including FileFormat ensures this will save as xlsx even if it was originally csv
+    
+    Dim lastRow     As Long
+    Dim lastCol     As Long
+
+    lastRow = Cells(Rows.Count, 1).End(xlUp).Row
+    'gets the last used row
+    
+    lastCol = Cells(8, Columns.Count).End(xlToLeft).Column
+    'gets the last used column. row 8 is the first fully-filled row
+    
+    Dim orderData As Range
+    Set orderData = ActiveSheet.Range(Cells(8, 1), Cells(lastRow, lastCol))
+    
+    Rows("1:7").Select
+    Selection.Delete Shift:=xlToLeft
+    Columns("A:B").Select
+    Selection.Delete Shift:=xlToLeft
+    Application.CutCopyMode = False
+
+    ActiveSheet.ListObjects.Add(SourceType:=xlSrcRange, Source:=orderData, xlListObjectHasHeaders:=xlYes, tablestyleName:="TableStyleMedium2").Name = "orderDataTable"
+
+    'selects a single column in the table by specifying two cells: the header cell named "ISBN", and the last-used contiguous cell below that
+    Dim topCell As Range
+    Dim bottomCell As Range
+    
+    ' find the coordinates of the ISBN column
+    Set topCell = Range("orderDataTable[[#Headers],[ISBN]]")
+    Set bottomCell = Range("orderDataTable[[#Headers],[ISBN]]").End(xlDown)
+    
+    ' select the ISBN column and format it
+    Range(topCell, bottomCell).Select
+    Selection.NumberFormat = "0"
+    
+    ' find the coordinates of the SKU column
+    Set topCell = Range("orderDataTable[[#Headers],[SKU]]")
+    Set bottomCell = Range("orderDataTable[[#Headers],[SKU]]").End(xlDown)
+    
+    ' select it and delete it
+    Range(topCell, bottomCell).Select
+    Selection.Delete Shift:=xlToLeft
+    
+    Columns("A:Z").EntireColumn.AutoFit
+    
+    ActiveSheet.ListObjects("orderDataTable").Range.AutoFilter Field:=1, Criteria1:= _
+                                                               Array("AML", "ENC", "ENG", "LIT"), Operator:=xlFilterValues
+    ActiveSheet.ListObjects( _
+        "orderDataTable").Sort.SortFields.Clear
+    ActiveSheet.ListObjects( _
+        "orderDataTable").Sort.SortFields.Add2 Key:=Range("orderDataTable[[#All],[Instructor]]"), _
+        SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:= _
+        xlSortTextAsNumbers
+    With ActiveSheet.ListObjects( _
+         "orderDataTable").Sort
+        .Header = xlYes
+        .MatchCase = False
+        .Orientation = xlTopToBottom
+        .Apply
+    End With
+End Sub
+
+
+
+
+
+
