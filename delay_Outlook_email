@@ -1,5 +1,5 @@
 Option Explicit
-Private Sub Application_ItemSend(ByVal Item As Object, ByVal Cancel As Boolean)
+Private Sub Application_ItemSend(ByVal Item As Object, ByRef Cancel As Boolean)
 
     Dim SendAt As Variant
     'since these values will never change during this macro, I am declaring them as constants with "Const" rather than as variables with "Dim"
