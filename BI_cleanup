@@ -20,7 +20,7 @@ Sub BI_cleanup()
 
 
     Dim newName     As String
-    newName = folderPath & "/" & "BI export " & MonthName(Month(Date)) & " " & WeekdayName(Weekday(Date)) & ".xlsx"
+    newName = folderPath & "/" & "BI export " & MonthName(Month(Date)) & " " & Day(Date) & ".xlsx"
 
     Dim currentCellSorted As String
 
