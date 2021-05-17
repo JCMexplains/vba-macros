@@ -40,22 +40,21 @@ Public Sub Format_BI_exports()
     Dim secondCounter           As Long
     
     'listing all the columns we want to delete, omitting the word 'Curriculum' since I'm going to delete that
-    Dim colsToDelete(13) As String
+    Dim colsToDelete(12) As String
     Dim var         As Variant
     colsToDelete(0) = "Outlier"
     colsToDelete(1) = "FTE"
     colsToDelete(2) = "Paid FTE"
     colsToDelete(3) = "Department"
     colsToDelete(4) = "Credit Type"
-    colsToDelete(5) = "Term"
-    colsToDelete(6) = "Primary Instructor Type"
-    colsToDelete(7) = "Course Pathway"
-    colsToDelete(8) = "ICS Code"
-    colsToDelete(9) = "Gen Ed"
-    colsToDelete(10) = "SummaryKey"
-    colsToDelete(11) = "Course ID Prefix"
-    colsToDelete(12) = "Primary Instructor ID"
-    colsToDelete(13) = "BC Course Discipline"
+    colsToDelete(5) = "Primary Instructor Type"
+    colsToDelete(6) = "Course Pathway"
+    colsToDelete(7) = "ICS Code"
+    colsToDelete(8) = "Gen Ed"
+    colsToDelete(9) = "SummaryKey"
+    colsToDelete(10) = "Course ID Prefix"
+    colsToDelete(11) = "Primary Instructor ID"
+    colsToDelete(12) = "BC Course Discipline"
     
     'Turn off screen flickering as the macro runs
     Application.ScreenUpdating = False
@@ -72,7 +71,8 @@ Public Sub Format_BI_exports()
     ActiveWindow.FreezePanes = True
     
     'changes names of columns to more human-friendly names, replacing anything of the form Curriculum.xyz with xyz
-    Rows("1:1").Select
+    ActiveSheet.ListObjects("Table1").HeaderRowRange.Select
+    
     'documentation for this replace function: https://docs.microsoft.com/en-us/office/vba/api/excel.range.replace
     'vbNullString is preferred over "" for indicating that you are replacing with an empty string
     Selection.Replace What:="Curriculum.", Replacement:=vbNullString, LookAt:=xlPart, _
