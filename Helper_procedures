@@ -1,6 +1,7 @@
+Option Explicit
+
 Public Sub SelectColumnFromTable(ByVal tableName As String, ByVal columnHeader As String)
     
-    'we will use these cells to specify a column in the table
     Dim structuredRefString As String
     
     structuredRefString = tableName & "[[#All],[" & columnHeader & "]]"
