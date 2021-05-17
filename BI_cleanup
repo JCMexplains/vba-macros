@@ -70,8 +70,8 @@ Public Sub Format_BI_exports()
     With ActiveWindow
         .SplitColumn = 0
         .SplitRow = 1
+        .FreezePanes = True
     End With
-    ActiveWindow.FreezePanes = True
     
     'changes names of columns to more human-friendly names, replacing anything of the form Curriculum.xyz with xyz
     ActiveSheet.ListObjects("Table1").HeaderRowRange.Select
@@ -82,7 +82,7 @@ Public Sub Format_BI_exports()
                       SearchOrder:=xlByRows, MatchCase:=False, SearchFormat:=False, _
                       ReplaceFormat:=False, FormulaVersion:=xlReplaceFormula2
     
-    'now replace "Division Department" with a shorter version. Row 1 is already selected
+    'now replace "Division Department" with a shorter version. Header row is already selected
     Selection.Replace What:="Division Department", Replacement:="Div Dept", LookAt:=xlPart, _
                       SearchOrder:=xlByRows, MatchCase:=False, SearchFormat:=False, _
                       ReplaceFormat:=False, FormulaVersion:=xlReplaceFormula2
@@ -130,11 +130,11 @@ Public Sub Format_BI_exports()
 
     
     'sort by instructor name
-    ActiveWorkbook.Worksheets("Sheet1").ListObjects("Table1").Sort.SortFields.Clear
-    ActiveWorkbook.Worksheets("Sheet1").ListObjects("Table1").Sort.SortFields.Add2 _
-        Key:=Range("Table1[[#All],[Instructor Name]]"), SortOn:=xlSortOnValues, _
-        Order:=xlAscending, DataOption:=xlSortTextAsNumbers
+        
     With ActiveWorkbook.Worksheets("Sheet1").ListObjects("Table1").Sort
+        .SortFields.Clear
+        .SortFields.Add2 Key:=Range("Table1[[#All],[Instructor Name]]"), SortOn:=xlSortOnValues, _
+        Order:=xlAscending, DataOption:=xlSortTextAsNumbers
         .Header = xlYes
         .MatchCase = False
         .Orientation = xlTopToBottom
