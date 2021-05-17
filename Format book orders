@@ -1,234 +1,68 @@
 Option Explicit
 
 '@EntryPoint
-Public Sub BI_cleanup()
-    
-    ' BI_cleanup Macro
-    ' Clean up export from Power BI
-    
-    ' variables for the last used row and the last used column
-    Dim lastRow     As Long
-    Dim lastCol     As Long
-    
-    With Sheet1
-        lastRow = Cells(Rows.Count, 1).End(xlUp).Row
-        'gets the last used row
-        
-        lastCol = Cells(3, Columns.Count).End(xlToLeft).Column
-        'gets the last used column. at this point row 3 is the header row, so we look there
-    End With
+Public Sub Format_book_orders()
+    '
+    ' Format_book_orders Macro
     
     Dim folderPath  As String
     folderPath = Application.ActiveWorkbook.Path
     'path without the file name; does not include the final forward slash
     'There is a difference between ActiveWorkbook and ThisWorkbook--Google it
-
-
+    
     Dim newName     As String
-    newName = folderPath & "/" & "BI export " & MonthName(Month(Date)) & " " & Day(Date) & ".xlsx"
-
-    Dim currentCellSorted As String
+    newName = folderPath & "/" & "Book orders " & MonthName(Month(Date)) & " " & Day(Date) & ".xlsx"
 
     ActiveWorkbook.SaveAs Filename:=newName, FileFormat:=xlOpenXMLWorkbook
     'including FileFormat ensures this will save as xlsx even if it was originally csv
     
-    'Kill originalName 'deletes the original file -- works on local folders, won't work on a network folder--why
-    
-    'create two counters
-    Dim firstCounter           As Long
-    
-    Dim secondCounter           As Long
-    
-    'listing all the columns we want to delete, omitting the word 'Curriculum' since I'm going to delete that
-    Dim colsToDelete(13) As String
-    Dim var         As Variant
-    colsToDelete(0) = "Outlier"
-    colsToDelete(1) = "FTE"
-    colsToDelete(2) = "Paid FTE"
-    colsToDelete(3) = "Department"
-    colsToDelete(4) = "Credit Type"
-    colsToDelete(5) = "Term"
-    colsToDelete(6) = "Primary Instructor Type"
-    colsToDelete(7) = "Course Pathway"
-    colsToDelete(8) = "ICS Code"
-    colsToDelete(9) = "Gen Ed"
-    colsToDelete(10) = "SummaryKey"
-    colsToDelete(11) = "Course ID Prefix"
-    colsToDelete(12) = "Primary Instructor ID"
-    colsToDelete(13) = "BC Course Discipline"
-    
-    'Turn off screen flickering as the macro runs
-    Application.ScreenUpdating = False
-    
-    'delete the first two rows, which we don't need
-    Rows("1:2").Delete
-    lastRow = lastRow - 2
-    
-    'freeze panes
-    With ActiveWindow
-        .SplitColumn = 0
-        .SplitRow = 1
-    End With
-    ActiveWindow.FreezePanes = True
-    
-    'changes names of columns to more human-friendly names, replacing anything of the form Curriculum.xyz with xyz
-    Rows("1:1").Select
-    'documentation for this replace function: https://docs.microsoft.com/en-us/office/vba/api/excel.range.replace
-    'vbNullString is preferred over "" for indicating that you are replacing with an empty string
-    Selection.Replace What:="Curriculum.", Replacement:=vbNullString, LookAt:=xlPart, _
-                      SearchOrder:=xlByRows, MatchCase:=False, SearchFormat:=False, _
-                      ReplaceFormat:=False, FormulaVersion:=xlReplaceFormula2
-    
-    'now replace "Division Department" with a shorter version. Row 1 is already selected
-    Selection.Replace What:="Division Department", Replacement:="Div Dept", LookAt:=xlPart, _
-                      SearchOrder:=xlByRows, MatchCase:=False, SearchFormat:=False, _
-                      ReplaceFormat:=False, FormulaVersion:=xlReplaceFormula2
-    
-    'delete some unneeded columns
-    'deleting by the name in the header rather than by column number or letter because columns seem to keep getting added to the report
-    For Each var In colsToDelete
-        Helper_procedures.SelectColumnFromTable "Table1", var
-        Selection.Delete Shift:=xlToLeft
-        lastCol = lastCol - 1                    'we now have one fewer used column, so we can decrement this variable
-    Next var
-    
-    'calling another Sub, which goes through all cells and changes any "numbers stored as text" to regular numbers
-    Helper_procedures.FixNumberStoredAsText ("Sheet1")
-    
-    'find the Sess column and format it
-    Helper_procedures.SelectColumnFromTable "Table1", "Sess"
-    Selection.FormatConditions.AddDatabar
-    With Selection.FormatConditions(1)
-        .MinPoint.Modify newtype:=xlConditionValueAutomaticMin
-        .MaxPoint.Modify newtype:=xlConditionValueAutomaticMax
-        .BarColor.Color = 2668287
-    End With
-            
-    
-    'find the Enrolled column and format it
-    Helper_procedures.SelectColumnFromTable "Table1", "Enrolled"
-    Selection.FormatConditions.AddColorScale ColorScaleType:=3
-        
-    
-    'formats instructor names to have a space after the comma
-    'the underscore character lets you break a long single-line statement into multiple lines
-    Helper_procedures.SelectColumnFromTable "Table1", "Instructor Name"
-    Selection.Replace What:=",", Replacement:=", ", LookAt:=xlPart, _
-                      SearchOrder:=xlByRows, MatchCase:=False, SearchFormat:=False, _
-                      ReplaceFormat:=False, FormulaVersion:=xlReplaceFormula2
- 
-    
-    'cleans up Delivery Method names, e.g. from RemoteLearningBlended to Remote Blended
-    'the underscore character lets you break a long single-line statement into multiple lines
-    Helper_procedures.SelectColumnFromTable "Table1", "Delivery Method"
-    Selection.Replace What:="RemoteLearning", Replacement:="Remote ", LookAt:=xlPart, _
-                      SearchOrder:=xlByRows, MatchCase:=False, SearchFormat:=False, _
-                      ReplaceFormat:=False, FormulaVersion:=xlReplaceFormula2
+    Dim lastRow     As Long
+    Dim lastCol     As Long
 
+    lastRow = Cells(Rows.Count, 1).End(xlUp).Row
+    'gets the last used row
     
-    'sort by instructor name
-    ActiveWorkbook.Worksheets("Sheet1").ListObjects("Table1").Sort.SortFields.Clear
-    ActiveWorkbook.Worksheets("Sheet1").ListObjects("Table1").Sort.SortFields.Add2 _
-        Key:=Range("Table1[[#All],[Instructor Name]]"), SortOn:=xlSortOnValues, _
-        Order:=xlAscending, DataOption:=xlSortTextAsNumbers
-    With ActiveWorkbook.Worksheets("Sheet1").ListObjects("Table1").Sort
+    lastCol = Cells(8, Columns.Count).End(xlToLeft).Column
+    'gets the last used column. row 8 is the first fully-filled row
+    
+    Dim orderData As Range
+    Set orderData = ActiveSheet.Range(Cells(8, 1), Cells(lastRow, lastCol))
+
+    Rows("1:7").Select
+    Selection.Delete Shift:=xlToLeft
+    Columns("A:B").Select
+    Selection.Delete Shift:=xlToLeft
+    Application.CutCopyMode = False
+
+    ActiveSheet.ListObjects.Add(SourceType:=xlSrcRange, Source:=orderData, xlListObjectHasHeaders:=xlYes, tablestyleName:="TableStyleMedium2").Name = "orderDataTable"
+
+    Helper_procedures.SelectColumnFromTable "orderDataTable", "ISBN"
+    Selection.NumberFormat = "0"
+    
+    Helper_procedures.SelectColumnFromTable "orderDataTable", "SKU"
+    Selection.Delete Shift:=xlToLeft
+    
+    Columns("A:Z").EntireColumn.AutoFit
+    
+    ActiveSheet.ListObjects("orderDataTable").Range.AutoFilter Field:=1, Criteria1:= _
+                                                               Array("AML", "ENC", "ENG", "LIT"), Operator:=xlFilterValues
+    ActiveSheet.ListObjects( _
+        "orderDataTable").Sort.SortFields.Clear
+    ActiveSheet.ListObjects( _
+        "orderDataTable").Sort.SortFields.Add2 Key:=Range("orderDataTable[[#All],[Instructor]]"), _
+        SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:= _
+        xlSortTextAsNumbers
+    With ActiveSheet.ListObjects( _
+         "orderDataTable").Sort
         .Header = xlYes
         .MatchCase = False
         .Orientation = xlTopToBottom
         .Apply
     End With
-    
-    ' sort designators in alphbetical (ASCII-betical?) order
-    For firstCounter = 1 To lastCol
-        If Cells(1, firstCounter).Value = "Designator List" Then
-            For secondCounter = 2 To lastRow
-                currentCellSorted = SortString(Cells(secondCounter, firstCounter))
-                Cells(secondCounter, firstCounter) = currentCellSorted
-            Next
-        End If
-    Next
-    
-    ' calls a Sub that will remove the trailing zero from room numbers
-    For firstCounter = 1 To lastCol
-        If Cells(1, firstCounter).Value = "Rm #" Then
-            FormatRoomNumbers firstCounter, lastRow
-            'once we find what we want, we can exit this loop
-            Exit For
-        End If
-    Next
-    
-    'find the column number of the Div Dept column and store it
-    Dim divDeptCol  As Long
-    
-    For firstCounter = 1 To lastCol
-        If Cells(1, firstCounter).Value = "Div Dept" Then
-            divDeptCol = firstCounter
-            Exit For
-        End If
-    Next
-    
-    'The table in this sheet has been named Table1 by default
-    'unfortunately, Range.AutoFilter only lets you choose the field to filter by using an integer offset, so we use the integer we found earlier
-    ActiveWorkbook.Sheets("Sheet1").ListObjects("Table1").Range.AutoFilter Field:=divDeptCol, Criteria1:=Array("ENG1BASE", "ENG1COPR"), Operator:=xlFilterValues
-    
-    'how to select columns by number rather than by letter (doing it by letter is much easier!)
-    'autofits selected columns
-    Columns(1).Resize(, lastCol).EntireColumn.AutoFit
-    
-    'Curt Frye says it's good style to turn screen updating back on at the end of a macro, even though it's technically not necessary
-    Application.ScreenUpdating = True
-    
 End Sub
 
-Public Function SortString(ByVal toSort As String) As String
-    Dim substrings       As Variant
-    Dim commaDelim As String
-    commaDelim = ","
-        
-    'the line below puts the two-character codes into an array, delimiting with commas
-    substrings = Split(Replace(toSort, " ", vbNullString), commaDelim)
-    substrings = SortArray(substrings)
-        
-    ' whatever is assigned to the name of the function is what gets returned
-    SortString = Replace(Join(substrings, commaDelim), commaDelim, commaDelim & " ")
-End Function
 
-Public Function SortArray(ByRef substrings As Variant) As Variant
-    Dim temp        As Variant
-    Dim thirdCounter           As Long
-    Dim fourthCounter           As Long
-        
-    For thirdCounter = LBound(substrings) To UBound(substrings) - 1
-        For fourthCounter = thirdCounter + 1 To UBound(substrings)
-            'Trim strips leading and trailing spaces
-            'this is implementing a bubble sort, i believe
-            If substrings(thirdCounter) > substrings(fourthCounter) Then
-                'the three lines below swap thirdCounter and fourthCounter
-                temp = substrings(thirdCounter)
-                substrings(thirdCounter) = substrings(fourthCounter)
-                substrings(fourthCounter) = temp
-            End If
-        Next fourthCounter
-    Next thirdCounter
-    SortArray = substrings
-End Function
 
-Public Sub FormatRoomNumbers(ByVal targetColumn As Long, ByVal lastRow As Long)
-    ' As Long throws an error if the argument coming in is not an integer
 
-    Dim regexOne As Object
-    Dim roomNum As String
-    Dim seventhCounter As Long
 
-    Set regexOne = New RegExp
-    
-    'this regex will match three digits followed by a zero
-    regexOne.Pattern = "(\d{3})0"
-    
-    For seventhCounter = 1 To lastRow
-        roomNum = Cells(seventhCounter, targetColumn).Value
-        Cells(seventhCounter, targetColumn).Value = regexOne.Replace(roomNum, "$1")
-    Next
-
-End Sub
 
