@@ -1,4 +1,3 @@
-'@IgnoreModule ModuleWithoutFolder, ImplicitActiveSheetReference, ImplicitActiveWorkbookReference
 Option Explicit
 
 '@EntryPoint
@@ -46,13 +45,11 @@ Public Sub BI_cleanup()
     colsToDelete(0) = "Outlier"
     colsToDelete(1) = "FTE"
     colsToDelete(2) = "Paid FTE"
-    colsToDelete(3) = "Course Pathway"
-    colsToDelete(4) = "Department"
-    colsToDelete(5) = "Credit Type"
-    colsToDelete(6) = "Term"
-    colsToDelete(7) = "Primary Instructor Type"
-    ' the line below fails because the Course Pathway column is empty, so I can't use End(xlDown) with it
-    ' colsToDelete(8) = "Course Pathway"
+    colsToDelete(3) = "Department"
+    colsToDelete(4) = "Credit Type"
+    colsToDelete(5) = "Term"
+    colsToDelete(6) = "Primary Instructor Type"
+    colsToDelete(7) = "Course Pathway"
     colsToDelete(8) = "ICS Code"
     colsToDelete(9) = "Gen Ed"
     colsToDelete(10) = "SummaryKey"
@@ -90,62 +87,44 @@ Public Sub BI_cleanup()
     'delete some unneeded columns
     'deleting by the name in the header rather than by column number or letter because columns seem to keep getting added to the report
     For Each var In colsToDelete
-        SelectColumnFromTable var
+        Helper_procedures.SelectColumnFromTable "Table1", var
         Selection.Delete Shift:=xlToLeft
-        lastCol = lastCol - 1            'we now have one fewer used column, so we can decrement this variable
+        lastCol = lastCol - 1                    'we now have one fewer used column, so we can decrement this variable
     Next var
     
-
-    
     'calling another Sub, which goes through all cells and changes any "numbers stored as text" to regular numbers
-    FixNumberStoredAsText
+    Helper_procedures.FixNumberStoredAsText ("Sheet1")
     
     'find the Sess column and format it
-    For firstCounter = 1 To lastCol
-        If Cells(1, firstCounter).Value = "Sess" Then
-            ActiveSheet.Range(Cells(2, firstCounter), Cells(lastRow, firstCounter)).Select
-            Selection.FormatConditions.AddDatabar
-            With Selection.FormatConditions(1)
-                .MinPoint.Modify newtype:=xlConditionValueAutomaticMin
-                .MaxPoint.Modify newtype:=xlConditionValueAutomaticMax
-                .BarColor.Color = 2668287
-            End With
-            Exit For
-        End If
-    Next
+    Helper_procedures.SelectColumnFromTable "Table1", "Sess"
+    Selection.FormatConditions.AddDatabar
+    With Selection.FormatConditions(1)
+        .MinPoint.Modify newtype:=xlConditionValueAutomaticMin
+        .MaxPoint.Modify newtype:=xlConditionValueAutomaticMax
+        .BarColor.Color = 2668287
+    End With
+            
     
     'find the Enrolled column and format it
-    For firstCounter = 1 To lastCol
-        If Cells(1, firstCounter).Value = "Enrolled" Then
-            ActiveSheet.Range(Cells(2, firstCounter), Cells(lastRow, firstCounter)).Select
-            Selection.FormatConditions.AddColorScale ColorScaleType:=3
-            Exit For
-        End If
-    Next
+    Helper_procedures.SelectColumnFromTable "Table1", "Enrolled"
+    Selection.FormatConditions.AddColorScale ColorScaleType:=3
+        
     
     'formats instructor names to have a space after the comma
     'the underscore character lets you break a long single-line statement into multiple lines
-    For firstCounter = 1 To lastCol
-        If Cells(1, firstCounter).Value = "Instructor Name" Then
-            ActiveSheet.Range(Cells(2, firstCounter), Cells(lastRow, firstCounter)).Select
-            Selection.Replace What:=",", Replacement:=", ", LookAt:=xlPart, _
-                              SearchOrder:=xlByRows, MatchCase:=False, SearchFormat:=False, _
-                              ReplaceFormat:=False, FormulaVersion:=xlReplaceFormula2
-            Exit For
-        End If
-    Next
+    Helper_procedures.SelectColumnFromTable "Table1", "Instructor Name"
+    Selection.Replace What:=",", Replacement:=", ", LookAt:=xlPart, _
+                      SearchOrder:=xlByRows, MatchCase:=False, SearchFormat:=False, _
+                      ReplaceFormat:=False, FormulaVersion:=xlReplaceFormula2
+ 
     
     'cleans up Delivery Method names, e.g. from RemoteLearningBlended to Remote Blended
     'the underscore character lets you break a long single-line statement into multiple lines
-    For firstCounter = 1 To lastCol
-        If Cells(1, firstCounter).Value = "Delivery Method" Then
-            ActiveSheet.Range(Cells(2, firstCounter), Cells(lastRow, firstCounter)).Select
-            Selection.Replace What:="RemoteLearning", Replacement:="Remote ", LookAt:=xlPart, _
-                              SearchOrder:=xlByRows, MatchCase:=False, SearchFormat:=False, _
-                              ReplaceFormat:=False, FormulaVersion:=xlReplaceFormula2
-            Exit For
-        End If
-    Next
+    Helper_procedures.SelectColumnFromTable "Table1", "Delivery Method"
+    Selection.Replace What:="RemoteLearning", Replacement:="Remote ", LookAt:=xlPart, _
+                      SearchOrder:=xlByRows, MatchCase:=False, SearchFormat:=False, _
+                      ReplaceFormat:=False, FormulaVersion:=xlReplaceFormula2
+
     
     'sort by instructor name
     ActiveWorkbook.Worksheets("Sheet1").ListObjects("Table1").Sort.SortFields.Clear
@@ -234,29 +213,6 @@ Public Function SortArray(ByRef substrings As Variant) As Variant
     SortArray = substrings
 End Function
 
-Public Sub FixNumberStoredAsText()
-    
-    Dim cellsToExamine      As Variant
-    Dim fifthCounter           As Long
-    Dim sixthCounter           As Long
-    
-    cellsToExamine = Sheets("Sheet1").UsedRange  'UsedRange includes any cell that has ever had a value in it
-    
-    For fifthCounter = 1 To UBound(cellsToExamine, 1) 'the upper bound is built in--Excel knows it
-        For sixthCounter = 1 To UBound(cellsToExamine, 2)
-            If IsNumeric(cellsToExamine(fifthCounter, sixthCounter)) And WorksheetFunction.IsText(cellsToExamine(fifthCounter, sixthCounter)) Then
-                'first condition tests if a cell "can be evaluated as a number" (not the same as "IS a number"), second condition uses a built-in worksheet function to check if the cell is text
-                'when both conditions are true, that's a number stored as text
-                With Sheets("Sheet1").Cells(fifthCounter, sixthCounter)
-                    .NumberFormat = "General"
-                    .Value = .Value              'this is a kind of magic I see often. Somehow, setting something's value to its value changes numbers stored as text to regular numbers
-                End With
-            End If
-        Next sixthCounter
-    Next fifthCounter
-    
-End Sub
-
 Public Sub FormatRoomNumbers(ByVal targetColumn As Long, ByVal lastRow As Long)
     ' As Long throws an error if the argument coming in is not an integer
 
@@ -276,18 +232,3 @@ Public Sub FormatRoomNumbers(ByVal targetColumn As Long, ByVal lastRow As Long)
 
 End Sub
 
-Public Sub SelectColumnFromTable(ByVal columnHeader As String)
-    
-    'we will use these cells to specify a column in the table
-    Dim topCell As Range
-    Dim bottomCell As Range
-    Dim structuredRefString As String
-    
-    structuredRefString = "Table1[[#Headers],[" & columnHeader & "]]"
-    
-    Set topCell = Range(structuredRefString)
-    Set bottomCell = Range(structuredRefString).End(xlDown)
-    
-    Range(topCell, bottomCell).Select
-    
-End Sub
