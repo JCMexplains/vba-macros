@@ -27,7 +27,7 @@ Public Sub Format_book_orders()
     
     Dim orderData As Range
     Set orderData = ActiveSheet.Range(Cells(8, 1), Cells(lastRow, lastCol))
-    
+
     Rows("1:7").Select
     Selection.Delete Shift:=xlToLeft
     Columns("A:B").Select
@@ -36,24 +36,10 @@ Public Sub Format_book_orders()
 
     ActiveSheet.ListObjects.Add(SourceType:=xlSrcRange, Source:=orderData, xlListObjectHasHeaders:=xlYes, tablestyleName:="TableStyleMedium2").Name = "orderDataTable"
 
-    'selects a single column in the table by specifying two cells: the header cell named "ISBN", and the last-used contiguous cell below that
-    Dim topCell As Range
-    Dim bottomCell As Range
-    
-    ' find the coordinates of the ISBN column
-    Set topCell = Range("orderDataTable[[#Headers],[ISBN]]")
-    Set bottomCell = Range("orderDataTable[[#Headers],[ISBN]]").End(xlDown)
-    
-    ' select the ISBN column and format it
-    Range(topCell, bottomCell).Select
+    SelectColumnFromTable "ISBN"
     Selection.NumberFormat = "0"
     
-    ' find the coordinates of the SKU column
-    Set topCell = Range("orderDataTable[[#Headers],[SKU]]")
-    Set bottomCell = Range("orderDataTable[[#Headers],[SKU]]").End(xlDown)
-    
-    ' select it and delete it
-    Range(topCell, bottomCell).Select
+    SelectColumnFromTable "SKU"
     Selection.Delete Shift:=xlToLeft
     
     Columns("A:Z").EntireColumn.AutoFit
@@ -75,6 +61,21 @@ Public Sub Format_book_orders()
     End With
 End Sub
 
+Public Sub SelectColumnFromTable(ByVal columnHeader As String)
+    
+    'we will use these cells to specify a column in the table
+    Dim topCell As Range
+    Dim bottomCell As Range
+    Dim structuredRefString As String
+    
+    structuredRefString = "orderDataTable[[#Headers],[" & columnHeader & "]]"
+    
+    Set topCell = Range(structuredRefString)
+    Set bottomCell = Range(structuredRefString).End(xlDown)
+    
+    Range(topCell, bottomCell).Select
+    
+End Sub
 
 
 
