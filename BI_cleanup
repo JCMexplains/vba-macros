@@ -13,6 +13,7 @@ Public Sub Format_BI_exports()
     ' will use later to iterate
     Dim cellUnderInspection As Range
 
+    Sheets(1).Name = "Class sections"
     
     With Sheet1
         lastRow = Cells(Rows.Count, 1).End(xlUp).Row
@@ -37,10 +38,6 @@ Public Sub Format_BI_exports()
     'including FileFormat ensures this will save as xlsx even if it was originally csv
     
     'Kill originalName 'deletes the original file -- works on local folders, won't work on a network folder--why
-    
-    'create two counters
-    Dim firstCounter           As Long
-    
     
     'listing all the columns we want to delete, omitting the word 'Curriculum' since I'm going to delete that
     Dim colsToDelete(12) As String
@@ -96,7 +93,7 @@ Public Sub Format_BI_exports()
     Next var
     
     'calling another Sub, which goes through all cells and changes any "numbers stored as text" to regular numbers
-    Helper_procedures.FixNumberStoredAsText ("Sheet1")
+    Helper_procedures.FixNumberStoredAsText ("Class sections")
     
     'find the Sess column and format it
     Helper_procedures.SelectColumnFromTable "Table1", "Sess"
@@ -108,7 +105,7 @@ Public Sub Format_BI_exports()
     End With
             
     
-    'find the Enrolled column and format it
+    'select the Enrolled column and format it
     Helper_procedures.SelectColumnFromTable "Table1", "Enrolled"
     Selection.FormatConditions.AddColorScale ColorScaleType:=3
         
@@ -130,8 +127,7 @@ Public Sub Format_BI_exports()
 
     
     'sort by instructor name
-        
-    With ActiveWorkbook.Worksheets("Sheet1").ListObjects("Table1").Sort
+    With ActiveWorkbook.Worksheets("Class sections").ListObjects("Table1").Sort
         .SortFields.Clear
         .SortFields.Add2 Key:=Range("Table1[[#All],[Instructor Name]]"), SortOn:=xlSortOnValues, _
         Order:=xlAscending, DataOption:=xlSortTextAsNumbers
@@ -142,7 +138,6 @@ Public Sub Format_BI_exports()
     End With
     
     ' sort designators in alphbetical (ASCII-betical?) order
-    
     Helper_procedures.SelectColumnFromTable "Table1", "Designator List"
     For Each cellUnderInspection In Selection.Cells()
         currentCellSorted = SortString(cellUnderInspection)
@@ -151,27 +146,19 @@ Public Sub Format_BI_exports()
 
 
     ' calls a Sub that will remove the trailing zero from room numbers
-    For firstCounter = 1 To lastCol
-        If Cells(1, firstCounter).Value = "Rm #" Then
-            FormatRoomNumbers firstCounter, lastRow
-            'once we find what we want, we can exit this loop
-            Exit For
-        End If
-    Next
+    ' the first argument is the column number of the column named "Rm #"
+    ' the single quote before the # in Rm # is a special-character escape
+    Helper_procedures.FormatRoomNumbers Range("Table1[[#Headers], [Rm '#]]").Column, lastRow
+           
     
     'find the column number of the Div Dept column and store it
     Dim divDeptCol  As Long
     
-    For firstCounter = 1 To lastCol
-        If Cells(1, firstCounter).Value = "Div Dept" Then
-            divDeptCol = firstCounter
-            Exit For
-        End If
-    Next
+    divDeptCol = Range("Table1[[#Headers], [Div Dept]]").Column
     
     'The table in this sheet has been named Table1 by default
     'unfortunately, Range.AutoFilter only lets you choose the field to filter by using an integer offset, so we use the integer we found earlier
-    ActiveWorkbook.Sheets("Sheet1").ListObjects("Table1").Range.AutoFilter Field:=divDeptCol, Criteria1:=Array("ENG1BASE", "ENG1COPR"), Operator:=xlFilterValues
+    ActiveWorkbook.Sheets("Class sections").ListObjects("Table1").Range.AutoFilter Field:=divDeptCol, Criteria1:=Array("ENG1BASE", "ENG1COPR"), Operator:=xlFilterValues
     
     'how to select columns by number rather than by letter (doing it by letter is much easier!)
     'autofits selected columns
@@ -197,41 +184,22 @@ End Function
 
 Public Function SortArray(ByRef substrings As Variant) As Variant
     Dim temp        As Variant
-    Dim thirdCounter           As Long
-    Dim fourthCounter           As Long
+    Dim firstCounter           As Long
+    Dim secondCounter           As Long
         
-    For thirdCounter = LBound(substrings) To UBound(substrings) - 1
-        For fourthCounter = thirdCounter + 1 To UBound(substrings)
+    For firstCounter = LBound(substrings) To UBound(substrings) - 1
+        For secondCounter = firstCounter + 1 To UBound(substrings)
             'Trim strips leading and trailing spaces
             'this is implementing a bubble sort, i believe
-            If substrings(thirdCounter) > substrings(fourthCounter) Then
-                'the three lines below swap thirdCounter and fourthCounter
-                temp = substrings(thirdCounter)
-                substrings(thirdCounter) = substrings(fourthCounter)
-                substrings(fourthCounter) = temp
+            If substrings(firstCounter) > substrings(secondCounter) Then
+                'the three lines below swap firstCounter and secondCounter
+                temp = substrings(firstCounter)
+                substrings(firstCounter) = substrings(secondCounter)
+                substrings(secondCounter) = temp
             End If
-        Next fourthCounter
-    Next thirdCounter
+        Next secondCounter
+    Next firstCounter
     SortArray = substrings
 End Function
-
-Public Sub FormatRoomNumbers(ByVal targetColumn As Long, ByVal lastRow As Long)
-    ' As Long throws an error if the argument coming in is not an integer
-
-    Dim regexOne As Object
-    Dim roomNum As String
-    Dim seventhCounter As Long
-
-    Set regexOne = New RegExp
-    
-    'this regex will match three digits followed by a zero
-    regexOne.Pattern = "(\d{3})0"
-    
-    For seventhCounter = 1 To lastRow
-        roomNum = Cells(seventhCounter, targetColumn).Value
-        Cells(seventhCounter, targetColumn).Value = regexOne.Replace(roomNum, "$1")
-    Next
-
-End Sub
 
 
