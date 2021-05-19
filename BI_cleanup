@@ -15,11 +15,11 @@ Public Sub Format_BI_exports()
 
     Sheets(1).Name = "Class sections"
     
-    With Sheet1
-        lastRow = Cells(Rows.Count, 1).End(xlUp).Row
+    With Sheets("Class sections")
+        lastRow = .Cells(Rows.Count, 1).End(xlUp).Row
         'gets the last used row
         
-        lastCol = Cells(3, Columns.Count).End(xlToLeft).Column
+        lastCol = .Cells(3, Columns.Count).End(xlToLeft).Column
         'gets the last used column. at this point row 3 is the header row, so we look there
     End With
     
@@ -156,7 +156,6 @@ Public Sub Format_BI_exports()
     
     divDeptCol = Range("Table1[[#Headers], [Div Dept]]").Column
     
-    'The table in this sheet has been named Table1 by default
     'unfortunately, Range.AutoFilter only lets you choose the field to filter by using an integer offset, so we use the integer we found earlier
     ActiveWorkbook.Sheets("Class sections").ListObjects("Table1").Range.AutoFilter Field:=divDeptCol, Criteria1:=Array("ENG1BASE", "ENG1COPR"), Operator:=xlFilterValues
     
