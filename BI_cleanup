@@ -9,9 +9,6 @@ Public Sub Format_BI_exports()
     ' variables for the last used row and the last used column
     Dim lastRow     As Long
     Dim lastCol     As Long
-    
-    ' will use later to iterate
-    Dim cellUnderInspection As Range
 
     Sheets(1).Name = "Class sections"
     
@@ -28,33 +25,13 @@ Public Sub Format_BI_exports()
     'path without the file name; does not include the final forward slash
     'There is a difference between ActiveWorkbook and ThisWorkbook--Google it
 
-
     Dim newName     As String
     newName = folderPath & "/" & "BI export " & MonthName(Month(Date)) & " " & Day(Date) & ".xlsx"
-
-    Dim currentCellSorted As String
-
+    
     ActiveWorkbook.SaveAs Filename:=newName, FileFormat:=xlOpenXMLWorkbook
     'including FileFormat ensures this will save as xlsx even if it was originally csv
     
     'Kill originalName 'deletes the original file -- works on local folders, won't work on a network folder--why
-    
-    'listing all the columns we want to delete, omitting the word 'Curriculum' since I'm going to delete that
-    Dim colsToDelete(12) As String
-    Dim var         As Variant
-    colsToDelete(0) = "Outlier"
-    colsToDelete(1) = "FTE"
-    colsToDelete(2) = "Paid FTE"
-    colsToDelete(3) = "Department"
-    colsToDelete(4) = "Credit Type"
-    colsToDelete(5) = "Primary Instructor Type"
-    colsToDelete(6) = "Course Pathway"
-    colsToDelete(7) = "ICS Code"
-    colsToDelete(8) = "Gen Ed"
-    colsToDelete(9) = "SummaryKey"
-    colsToDelete(10) = "Course ID Prefix"
-    colsToDelete(11) = "Primary Instructor ID"
-    colsToDelete(12) = "BC Course Discipline"
     
     'Turn off screen flickering as the macro runs
     Application.ScreenUpdating = False
@@ -86,11 +63,28 @@ Public Sub Format_BI_exports()
     
     'delete some unneeded columns
     'deleting by the name in the header rather than by column number or letter because columns seem to keep getting added to the report
-    For Each var In colsToDelete
-        Helper_procedures.SelectColumnFromTable "Table1", var
+    'listing all the columns we want to delete, omitting the word 'Curriculum' since I'm going to delete that
+    Dim colsToDelete(12) As String
+    Dim colName         As Variant
+    colsToDelete(0) = "Outlier"
+    colsToDelete(1) = "FTE"
+    colsToDelete(2) = "Paid FTE"
+    colsToDelete(3) = "Department"
+    colsToDelete(4) = "Credit Type"
+    colsToDelete(5) = "Primary Instructor Type"
+    colsToDelete(6) = "Course Pathway"
+    colsToDelete(7) = "ICS Code"
+    colsToDelete(8) = "Gen Ed"
+    colsToDelete(9) = "SummaryKey"
+    colsToDelete(10) = "Course ID Prefix"
+    colsToDelete(11) = "Primary Instructor ID"
+    colsToDelete(12) = "BC Course Discipline"
+    
+    For Each colName In colsToDelete
+        Helper_procedures.SelectColumnFromTable "Table1", colName
         Selection.Delete Shift:=xlToLeft
         lastCol = lastCol - 1                    'we now have one fewer used column, so we can decrement this variable
-    Next var
+    Next colName
     
     'calling another Sub, which goes through all cells and changes any "numbers stored as text" to regular numbers
     Helper_procedures.FixNumberStoredAsText ("Class sections")
@@ -103,12 +97,10 @@ Public Sub Format_BI_exports()
         .MaxPoint.Modify newtype:=xlConditionValueAutomaticMax
         .BarColor.Color = 2668287
     End With
-            
     
     'select the Enrolled column and format it
     Helper_procedures.SelectColumnFromTable "Table1", "Enrolled"
     Selection.FormatConditions.AddColorScale ColorScaleType:=3
-        
     
     'formats instructor names to have a space after the comma
     'the underscore character lets you break a long single-line statement into multiple lines
@@ -116,7 +108,6 @@ Public Sub Format_BI_exports()
     Selection.Replace What:=",", Replacement:=", ", LookAt:=xlPart, _
                       SearchOrder:=xlByRows, MatchCase:=False, SearchFormat:=False, _
                       ReplaceFormat:=False, FormulaVersion:=xlReplaceFormula2
- 
     
     'cleans up Delivery Method names, e.g. from RemoteLearningBlended to Remote Blended
     'the underscore character lets you break a long single-line statement into multiple lines
@@ -124,7 +115,6 @@ Public Sub Format_BI_exports()
     Selection.Replace What:="RemoteLearning", Replacement:="Remote ", LookAt:=xlPart, _
                       SearchOrder:=xlByRows, MatchCase:=False, SearchFormat:=False, _
                       ReplaceFormat:=False, FormulaVersion:=xlReplaceFormula2
-
     
     'sort by instructor name
     With ActiveWorkbook.Worksheets("Class sections").ListObjects("Table1").Sort
@@ -138,18 +128,19 @@ Public Sub Format_BI_exports()
     End With
     
     ' sort designators in alphbetical (ASCII-betical?) order
+    Dim cellUnderInspection As Range
+    Dim currentCellSorted As String
+    
     Helper_procedures.SelectColumnFromTable "Table1", "Designator List"
     For Each cellUnderInspection In Selection.Cells()
         currentCellSorted = SortString(cellUnderInspection)
         cellUnderInspection = currentCellSorted
     Next
 
-
     ' calls a Sub that will remove the trailing zero from room numbers
     ' the first argument is the column number of the column named "Rm #"
     ' the single quote before the # in Rm # is a special-character escape
     Helper_procedures.FormatRoomNumbers Range("Table1[[#Headers], [Rm '#]]").Column, lastRow
-           
     
     'find the column number of the Div Dept column and store it
     Dim divDeptCol  As Long
@@ -178,10 +169,10 @@ Public Function SortString(ByVal toSort As String) As String
     substrings = SortArray(substrings)
         
     ' whatever is assigned to the name of the function is what gets returned
-    SortString = Replace(Join(substrings, commaDelim), commaDelim, commaDelim & " ")
+    SortString = Join(substrings, commaDelim & " ")
 End Function
 
-Public Function SortArray(ByRef substrings As Variant) As Variant
+Public Function SortArray(ByVal substrings As Variant) As Variant
     Dim temp        As Variant
     Dim firstCounter           As Long
     Dim secondCounter           As Long
@@ -200,5 +191,3 @@ Public Function SortArray(ByRef substrings As Variant) As Variant
     Next firstCounter
     SortArray = substrings
 End Function
-
-
