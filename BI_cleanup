@@ -7,30 +7,19 @@ Public Sub Format_BI_exports()
     ' BI_cleanup Macro
     ' Clean up export from Power BI
     
-    ' variables for the last used row and the last used column
-    Dim lastRow     As Long
-    Dim lastCol     As Long
-    
     If Not Helper_procedures.tableExist(ActiveSheet, "Table1") Then
         ' If there is no Table1, we are either on the wrong sheet or have already run this macro, so exit
         MsgBox ("This sheet has no Table1 to work on, so this macro didn't do anything")
         Exit Sub
     End If
     
-    Dim originalName As String
-    originalName = ActiveWorkbook.FullName
+    RenameSheet
     
-    Dim newName     As String
-    newName = folderPath & "/" & termName & " " & termNumber & " BI schedule " & MonthName(Month(Date)) & " " & Day(Date) & ".xlsx"
+    RenameFile
     
-    ActiveWorkbook.SaveAs Filename:=newName, FileFormat:=xlOpenXMLWorkbook
-    'including FileFormat ensures this will save as xlsx even if it was originally csv
-    
-    ' Kill originalName 'deletes the original file -- works on local folders, won't work on a network folder--why
-    
-    ActiveWorkbook.Sheets(1).Name = "Class sections"
-    ActiveWorkbook.Sheets("Class sections").ListObjects("Table1").Name = "ClassListTable"
-    
+    ' variables for the last used row and the last used column
+    Dim lastRow     As Long
+    Dim lastCol     As Long
     With ActiveWorkbook.Sheets("Class sections")
         lastRow = .Cells(Rows.Count, 1).End(xlUp).Row
         'gets the last used row
@@ -38,27 +27,7 @@ Public Sub Format_BI_exports()
         lastCol = .Cells(3, Columns.Count).End(xlToLeft).Column
         'gets the last used column. at this point row 3 is the header row, so we look there
     End With
-    
-    Dim folderPath  As String
-    folderPath = Application.ActiveWorkbook.Path
-    'path without the file name; does not include the final forward slash
-    'There is a difference between ActiveWorkbook and ThisWorkbook--Google it
-    
-    Dim termNumber As String
-    termNumber = Range("ClassListTable[[#Headers], [Term]]").Offset(1, 0).Value
-    
-    Dim termName As String
-    
-    If Right$(termNumber, 1) = 1 Then
-        termName = "Fall"
-    ElseIf Right$(termNumber, 1) = 2 Then
-        termName = "Spring"
-    ElseIf Right$(termNumber, 1) = 3 Then
-        termName = "Summer"
-    End If
-    
-    
-    
+ 
     'Turn off screen flickering as the macro runs
     Application.ScreenUpdating = False
     
@@ -223,4 +192,35 @@ Public Function SortArray(ByVal substrings As Variant) As Variant
     SortArray = substrings
 End Function
 
+' making a sub private means it can't be called from another module and won't show up in the Macro window
+Private Sub RenameSheet()
+    ActiveWorkbook.Sheets(1).Name = "Class sections"
+    ActiveWorkbook.Sheets("Class sections").ListObjects("Table1").Name = "ClassListTable"
+End Sub
+
+Private Sub RenameFile()
+    Dim originalName As String
+    originalName = ActiveWorkbook.FullName
+    
+    Dim termNumber As String
+    termNumber = Range("ClassListTable[[#Headers], [Term]]").Offset(1, 0).Value
+    
+    Dim termName As String
+    
+    If Right$(termNumber, 1) = 1 Then
+        termName = "Fall"
+    ElseIf Right$(termNumber, 1) = 2 Then
+        termName = "Spring"
+    ElseIf Right$(termNumber, 1) = 3 Then
+        termName = "Summer"
+    End If
+    
+    Dim newName     As String
+    newName = Application.ActiveWorkbook.Path & "/" & termName & " " & termNumber & " BI schedule " & MonthName(Month(Date)) & " " & Day(Date) & ".xlsx"
+    
+    ActiveWorkbook.SaveAs Filename:=newName, FileFormat:=xlOpenXMLWorkbook
+    'including FileFormat ensures this will save as xlsx even if it was originally csv
+    
+    ' Kill originalName 'deletes the original file -- works on local folders, won't work on a network folder--why
+End Sub
 
