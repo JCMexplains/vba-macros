@@ -7,7 +7,17 @@ Public Sub SelectColumnFromTable(ByVal tableName As String, ByVal columnHeader A
     
     structuredRefString = tableName & "[[#All],[" & columnHeader & "]]"
     
+    ' error handling--if the header name I am looking for doesn't exist, a 1004 error will be raised
+    On Error GoTo Handler
     Range(structuredRefString).Select
+    Exit Sub
+    
+Handler:
+    If Err = 1004 Then
+        Resume Next
+    Else
+        'do nothing--allow the program to crash
+    End If
     
 End Sub
 
