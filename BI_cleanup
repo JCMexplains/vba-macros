@@ -17,6 +17,17 @@ Public Sub Format_BI_exports()
         Exit Sub
     End If
     
+    Dim originalName As String
+    originalName = ActiveWorkbook.FullName
+    
+    Dim newName     As String
+    newName = folderPath & "/" & termName & " " & termNumber & " BI schedule " & MonthName(Month(Date)) & " " & Day(Date) & ".xlsx"
+    
+    ActiveWorkbook.SaveAs Filename:=newName, FileFormat:=xlOpenXMLWorkbook
+    'including FileFormat ensures this will save as xlsx even if it was originally csv
+    
+    ' Kill originalName 'deletes the original file -- works on local folders, won't work on a network folder--why
+    
     ActiveWorkbook.Sheets(1).Name = "Class sections"
     ActiveWorkbook.Sheets("Class sections").ListObjects("Table1").Name = "ClassListTable"
     
@@ -46,16 +57,7 @@ Public Sub Format_BI_exports()
         termName = "Summer"
     End If
     
-    Dim originalName As String
-    originalName = ActiveWorkbook.FullName
     
-    Dim newName     As String
-    newName = folderPath & "/" & termName & " " & termNumber & " BI schedule " & MonthName(Month(Date)) & " " & Day(Date) & ".xlsx"
-    
-    ActiveWorkbook.SaveAs Filename:=newName, FileFormat:=xlOpenXMLWorkbook
-    'including FileFormat ensures this will save as xlsx even if it was originally csv
-    
-    ' Kill originalName 'deletes the original file -- works on local folders, won't work on a network folder--why
     
     'Turn off screen flickering as the macro runs
     Application.ScreenUpdating = False
