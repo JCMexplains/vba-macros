@@ -1,3 +1,4 @@
+'@Folder("Cleanup")
 Option Explicit
 
 '@EntryPoint
@@ -19,18 +20,18 @@ Public Sub Format_book_orders()
     Dim lastRow     As Long
     Dim lastCol     As Long
 
-    lastRow = Cells(Rows.Count, 1).End(xlUp).Row
+    lastRow = ActiveSheet.Cells(ActiveSheet.Rows.Count, 1).End(xlUp).Row
     'gets the last used row
     
-    lastCol = Cells(8, Columns.Count).End(xlToLeft).Column
+    lastCol = ActiveSheet.Cells(8, ActiveSheet.Columns.Count).End(xlToLeft).Column
     'gets the last used column. row 8 is the first fully-filled row
     
     Dim orderData As Range
-    Set orderData = ActiveSheet.Range(Cells(8, 1), Cells(lastRow, lastCol))
+    Set orderData = ActiveSheet.Range(ActiveSheet.Cells(8, 1), ActiveSheet.Cells(lastRow, lastCol))
 
-    Rows("1:7").Select
+    ActiveSheet.Rows("1:7").Select
     Selection.Delete Shift:=xlToLeft
-    Columns("A:B").Select
+    ActiveSheet.Columns("A:B").Select
     Selection.Delete Shift:=xlToLeft
     Application.CutCopyMode = False
 
@@ -42,14 +43,14 @@ Public Sub Format_book_orders()
     Helper_procedures.SelectColumnFromTable "orderDataTable", "SKU"
     Selection.Delete Shift:=xlToLeft
     
-    Columns("A:Z").EntireColumn.AutoFit
+    ActiveSheet.Columns("A:Z").EntireColumn.AutoFit
     
     ActiveSheet.ListObjects("orderDataTable").Range.AutoFilter Field:=1, Criteria1:= _
                                                                Array("AML", "ENC", "ENG", "LIT"), Operator:=xlFilterValues
     ActiveSheet.ListObjects( _
         "orderDataTable").Sort.SortFields.Clear
     ActiveSheet.ListObjects( _
-        "orderDataTable").Sort.SortFields.Add2 Key:=Range("orderDataTable[[#All],[Instructor]]"), _
+        "orderDataTable").Sort.SortFields.Add2 Key:=ActiveSheet.Range("orderDataTable[[#All],[Instructor]]"), _
         SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:= _
         xlSortTextAsNumbers
     With ActiveSheet.ListObjects( _
