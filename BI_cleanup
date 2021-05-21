@@ -21,10 +21,10 @@ Public Sub Format_BI_exports()
     Dim lastRow     As Long
     Dim lastCol     As Long
     With ActiveWorkbook.Sheets("Class sections")
-        lastRow = .Cells(Rows.Count, 1).End(xlUp).Row
+        lastRow = .Cells(ActiveSheet.Rows.Count, 1).End(xlUp).Row
         'gets the last used row
         
-        lastCol = .Cells(3, Columns.Count).End(xlToLeft).Column
+        lastCol = .Cells(3, ActiveSheet.Columns.Count).End(xlToLeft).Column
         'gets the last used column. at this point row 3 is the header row, so we look there
     End With
  
@@ -32,7 +32,7 @@ Public Sub Format_BI_exports()
     Application.ScreenUpdating = False
     
     'delete the first two rows, which we don't need
-    Rows("1:2").Delete
+    ActiveSheet.Rows("1:2").Delete
     lastRow = lastRow - 2
     
     'freeze panes
@@ -61,24 +61,25 @@ Public Sub Format_BI_exports()
     'delete some unneeded columns
     'deleting by the name in the header rather than by column number or letter because columns seem to keep getting added to the report
     'listing all the columns we want to delete, omitting the word 'Curriculum' since I already deleted that
-    Dim colsToDelete(15) As String
+    Dim colsToDelete() As String
     Dim colName         As Variant
-    colsToDelete(0) = "Outlier"
-    colsToDelete(1) = "FTE"
-    colsToDelete(2) = "Paid FTE"
-    colsToDelete(3) = "Department"
-    colsToDelete(4) = "Credit Type"
-    colsToDelete(5) = "Primary Instructor Type"
-    colsToDelete(6) = "Course Pathway"
-    colsToDelete(7) = "ICS Code"
+    colsToDelete(0) = "BC Course Discipline"
+    colsToDelete(1) = "Course ID Prefix"
+    colsToDelete(2) = "Course Pathway"
+    colsToDelete(3) = "Credit Hrs"
+    colsToDelete(7) = "Credit Type"
+    colsToDelete(5) = "Department"
+    colsToDelete(6) = "Division"
+    colsToDelete(7) = "FTE"
     colsToDelete(8) = "Gen Ed"
-    colsToDelete(9) = "SummaryKey"
-    colsToDelete(10) = "Course ID Prefix"
-    colsToDelete(11) = "Primary Instructor ID"
-    colsToDelete(12) = "BC Course Discipline"
-    colsToDelete(13) = "Credit Hrs"
+    colsToDelete(9) = "ICS Code"
+    colsToDelete(10) = "Outlier"
+    colsToDelete(11) = "Paid FTE"
+    colsToDelete(12) = "Primary Instructor ID"
+    colsToDelete(13) = "Primary Instructor Type"
     colsToDelete(14) = "Std Cntct Hrs"
-    colsToDelete(15) = "Division"
+    colsToDelete(15) = "SummaryKey"
+
     
     For Each colName In colsToDelete
         Helper_procedures.SelectColumnFromTable "ClassListTable", colName
@@ -119,7 +120,7 @@ Public Sub Format_BI_exports()
     'sort by instructor name
     With ActiveWorkbook.Worksheets("Class sections").ListObjects("ClassListTable").Sort
         .SortFields.Clear
-        .SortFields.Add2 Key:=Range("ClassListTable[[#All],[Instructor Name]]"), SortOn:=xlSortOnValues, _
+        .SortFields.Add2 Key:=ActiveSheet.Range("ClassListTable[[#All],[Instructor Name]]"), SortOn:=xlSortOnValues, _
         Order:=xlAscending, DataOption:=xlSortTextAsNumbers
         .Header = xlYes
         .MatchCase = False
@@ -140,19 +141,19 @@ Public Sub Format_BI_exports()
     ' calls a Sub that will remove the trailing zero from room numbers
     ' the first argument is the column number of the column named "Rm #"
     ' the single quote before the # in Rm # is a special-character escape
-    Helper_procedures.TrimTrailingZero Range("ClassListTable[[#Headers], [Rm '#]]").Column, lastRow
+    Helper_procedures.TrimTrailingZero ActiveSheet.Range("ClassListTable[[#Headers], [Rm '#]]").Column, lastRow
     
-        'find the column number of the Div Dept column and store it
-        Dim divDeptCol  As Long
+    'find the column number of the Div Dept column and store it
+    Dim divDeptCol  As Long
     
-        divDeptCol = Range("ClassListTable[[#Headers], [Div Dept]]").Column
+    divDeptCol = ActiveSheet.Range("ClassListTable[[#Headers], [Div Dept]]").Column
     
-        'unfortunately, Range.AutoFilter only lets you choose the field to filter by using an integer offset, so we use the integer we found earlier
-        ActiveWorkbook.Sheets("Class sections").ListObjects("ClassListTable").Range.AutoFilter Field:=divDeptCol, Criteria1:=Array("ENG1BASE", "ENG1COPR", "ENG5BASE"), Operator:=xlFilterValues
+    'unfortunately, Range.AutoFilter only lets you choose the field to filter by using an integer offset, so we use the integer we found earlier
+    ActiveWorkbook.Sheets("Class sections").ListObjects("ClassListTable").Range.AutoFilter Field:=divDeptCol, Criteria1:=Array("ENG1BASE", "ENG1COPR", "ENG5BASE"), Operator:=xlFilterValues
     
     'how to select columns by number rather than by letter (doing it by letter is much easier!)
     'autofits selected columns
-    Columns(1).Resize(, lastCol).EntireColumn.AutoFit
+    ActiveSheet.Columns(1).Resize(, lastCol).EntireColumn.AutoFit
     
     'Curt Frye says it's good style to turn screen updating back on at the end of a macro, even though it's technically not necessary
     Application.ScreenUpdating = True
@@ -203,7 +204,7 @@ Private Sub RenameFile()
     originalName = ActiveWorkbook.FullName
     
     Dim termNumber As String
-    termNumber = Range("ClassListTable[[#Headers], [Term]]").Offset(1, 0).Value
+    termNumber = ActiveSheet.Range("ClassListTable[[#Headers], [Term]]").Offset(1, 0).Value
     
     Dim termName As String
     
