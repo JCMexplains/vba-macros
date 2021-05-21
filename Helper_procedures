@@ -9,14 +9,12 @@ Public Sub SelectColumnFromTable(ByVal tableName As String, ByVal columnHeader A
     
     ' error handling--if the header name I am looking for doesn't exist, a 1004 error will be raised
     On Error GoTo Handler
-    Range(structuredRefString).Select
+    ActiveSheet.Range(structuredRefString).Select
     Exit Sub
     
 Handler:
-    If Err = 1004 Then
+    If Err.Number = 1004 Then
         Resume Next
-    Else
-        'do nothing--allow the program to crash
     End If
     
 End Sub
@@ -57,8 +55,8 @@ Public Sub TrimTrailingZero(ByVal targetColumn As Long, ByVal lastRow As Long)
     regexOne.Pattern = "(\d+)0"
     
     For firstCounter = 1 To lastRow
-        roomNum = Cells(firstCounter, targetColumn).Value
-        Cells(firstCounter, targetColumn).Value = regexOne.Replace(roomNum, "$1")
+        roomNum = ActiveSheet.Cells(firstCounter, targetColumn).Value
+        ActiveSheet.Cells(firstCounter, targetColumn).Value = regexOne.Replace(roomNum, "$1")
     Next
 
 End Sub
