@@ -177,7 +177,7 @@ Public Sub Format_BI_exports()
         divDeptCol = Range("ClassListTable[[#Headers], [Div Dept]]").Column
     
         'unfortunately, Range.AutoFilter only lets you choose the field to filter by using an integer offset, so we use the integer we found earlier
-        ActiveWorkbook.Sheets("Class sections").ListObjects("ClassListTable").Range.AutoFilter Field:=divDeptCol, Criteria1:=Array("ENG1BASE", "ENG1COPR"), Operator:=xlFilterValues
+        ActiveWorkbook.Sheets("Class sections").ListObjects("ClassListTable").Range.AutoFilter Field:=divDeptCol, Criteria1:=Array("ENG1BASE", "ENG1COPR", "ENG5BASE"), Operator:=xlFilterValues
     
     'how to select columns by number rather than by letter (doing it by letter is much easier!)
     'autofits selected columns
