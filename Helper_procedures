@@ -1,3 +1,4 @@
+'@Folder("Helpers")
 Option Explicit
 
 Public Sub SelectColumnFromTable(ByVal tableName As String, ByVal columnHeader As String)
@@ -16,14 +17,14 @@ Public Sub FixNumberStoredAsText(ByVal sheetName As String)
     Dim firstCounter           As Long
     Dim secondCounter           As Long
     
-    cellsToExamine = Sheets(sheetName).UsedRange  'UsedRange includes any cell that has ever had a value in it
+    cellsToExamine = ActiveWorkbook.Sheets(sheetName).UsedRange  'UsedRange includes any cell that has ever had a value in it
     
     For firstCounter = 1 To UBound(cellsToExamine, 1) 'the upper bound is built in--Excel knows it
         For secondCounter = 1 To UBound(cellsToExamine, 2)
             If IsNumeric(cellsToExamine(firstCounter, secondCounter)) And WorksheetFunction.IsText(cellsToExamine(firstCounter, secondCounter)) Then
                 'first condition tests if a cell "can be evaluated as a number" (not the same as "IS a number"), second condition uses a built-in worksheet function to check if the cell is text
                 'when both conditions are true, that's a number stored as text
-                With Sheets(sheetName).Cells(firstCounter, secondCounter)
+                With ActiveWorkbook.Sheets(sheetName).Cells(firstCounter, secondCounter)
                     .NumberFormat = "General"
                     .Value = .Value              'this is a kind of magic I see often. Somehow, setting something's value to its value changes numbers stored as text to regular numbers
                 End With
@@ -33,21 +34,29 @@ Public Sub FixNumberStoredAsText(ByVal sheetName As String)
     
 End Sub
 
-Public Sub FormatRoomNumbers(ByVal targetColumn As Long, ByVal lastRow As Long)
+Public Sub TrimTrailingZero(ByVal targetColumn As Long, ByVal lastRow As Long)
     ' As Long throws an error if the argument coming in is not an integer
 
     Dim regexOne As Object
     Dim roomNum As String
-    Dim seventhCounter As Long
+    Dim firstCounter As Long
 
     Set regexOne = New RegExp
     
-    'this regex will match three digits followed by a zero
-    regexOne.Pattern = "(\d{3})0"
+    'this regex will match one or more digits followed by a zero, capturing everything before the zero
+    regexOne.Pattern = "(\d+)0"
     
-    For seventhCounter = 1 To lastRow
-        roomNum = Cells(seventhCounter, targetColumn).Value
-        Cells(seventhCounter, targetColumn).Value = regexOne.Replace(roomNum, "$1")
+    For firstCounter = 1 To lastRow
+        roomNum = Cells(firstCounter, targetColumn).Value
+        Cells(firstCounter, targetColumn).Value = regexOne.Replace(roomNum, "$1")
     Next
 
 End Sub
+
+Public Function tableExist(ByVal Sht As Worksheet, ByVal tblName As String) As Boolean
+    
+    On Error Resume Next
+    tableExist = Sht.ListObjects(tblName).Name = tblName
+    On Error GoTo 0
+
+End Function
