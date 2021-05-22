@@ -28,6 +28,7 @@ Public Sub Format_BI_exports()
         lastRow = .Cells(ActiveSheet.Rows.Count, 1).End(xlUp).Row
         'gets the last used row
         
+        ' TODO choose header row dynamically
         lastCol = .Cells(3, ActiveSheet.Columns.Count).End(xlToLeft).Column
         'gets the last used column. at this point row 3 is the header row, so we look there
     End With
@@ -36,6 +37,7 @@ Public Sub Format_BI_exports()
     Application.ScreenUpdating = False
     
     'delete the first two rows, which we don't need
+    ' TODO pick the nubmer of rows to delete dynamically--"delete all rows before header"
     ActiveSheet.Rows("1:2").Delete
     lastRow = lastRow - 2
     
@@ -228,6 +230,7 @@ Private Sub RenameFile()
     ActiveWorkbook.SaveAs Filename:=newName, FileFormat:=xlOpenXMLWorkbook
     'including FileFormat ensures this will save as xlsx even if it was originally csv
     
+    ' TODO get this to work--maybe move original file to temp folder then delete?
     ' Kill originalName 'deletes the original file -- works on local folders, won't work on a network folder--why
 
 
