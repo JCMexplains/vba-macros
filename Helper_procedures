@@ -52,7 +52,8 @@ Public Sub TrimTrailingZero(ByVal targetColumn As Long, ByVal lastRow As Long)
     Set regexOne = New RegExp
     
     'this regex will match one or more digits followed by a zero, capturing everything before the zero
-    regexOne.Pattern = "(\d+)0"
+    'the dollar sign anchors the match to the end of the string. otherwise we'd get undesired behavior on a number like 13402
+    regexOne.Pattern = "(\d+)0$"
     
     For firstCounter = 1 To lastRow
         roomNum = ActiveSheet.Cells(firstCounter, targetColumn).Value
