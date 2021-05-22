@@ -11,7 +11,7 @@ Public Sub Format_BI_exports()
         ' If there is no Table1, we are either on the wrong sheet or have already run this macro, so exit
         'a MessageBox is actually a number, weirdly. if you want to display any more than just a text string, you must Dim the variable
         Dim message As Long
-        message = MsgBox("This sheet has no Table1 to work on, so this macro didn't do anything.", vbInformation)
+        message = MsgBox("This sheet has no Table1 to work on, so this macro didn't do anything.", vbInformation, "Format BI exports")
         Exit Sub
     End If
     
