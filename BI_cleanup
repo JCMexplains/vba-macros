@@ -92,7 +92,7 @@ Public Sub Format_BI_exports()
     'calling another Sub, which goes through all cells and changes any "numbers stored as text" to regular numbers
     Helper_procedures.FixNumberStoredAsText ("Class sections")
     
-    'find the Sess column and format it
+    'select the Sess column and format it
     Helper_procedures.SelectColumnFromTable "ClassListTable", "Sess"
     Selection.FormatConditions.AddDatabar
     With Selection.FormatConditions(1)
@@ -113,7 +113,6 @@ Public Sub Format_BI_exports()
                       ReplaceFormat:=False, FormulaVersion:=xlReplaceFormula2
     
     'cleans up Delivery Method names, e.g. from RemoteLearningBlended to Remote Blended
-    'the underscore character lets you break a long single-line statement into multiple lines
     Helper_procedures.SelectColumnFromTable "ClassListTable", "Delivery Method"
     Selection.Replace What:="RemoteLearning", Replacement:="Remote ", LookAt:=xlPart, _
                       SearchOrder:=xlByRows, MatchCase:=False, SearchFormat:=False, _
@@ -160,6 +159,7 @@ Public Sub Format_BI_exports()
     'Curt Frye says it's good style to turn screen updating back on at the end of a macro, even though it's technically not necessary
     Application.ScreenUpdating = True
     
+    'setting the status bar back to blank
     Application.StatusBar = vbNullString
     
 End Sub
