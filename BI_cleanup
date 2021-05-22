@@ -13,6 +13,8 @@ Public Sub Format_BI_exports()
         Exit Sub
     End If
     
+    Application.StatusBar = "Macro running. Press Esc to cancel."
+    
     RenameSheet
     
     RenameFile
@@ -158,6 +160,8 @@ Public Sub Format_BI_exports()
     'Curt Frye says it's good style to turn screen updating back on at the end of a macro, even though it's technically not necessary
     Application.ScreenUpdating = True
     
+    Application.StatusBar = vbNullString
+    
 End Sub
 
 Public Function SortString(ByVal toSort As String) As String
@@ -223,5 +227,7 @@ Private Sub RenameFile()
     'including FileFormat ensures this will save as xlsx even if it was originally csv
     
     ' Kill originalName 'deletes the original file -- works on local folders, won't work on a network folder--why
+
+
 End Sub
 
