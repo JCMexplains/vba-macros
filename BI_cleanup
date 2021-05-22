@@ -67,7 +67,7 @@ Public Sub Format_BI_exports()
     colsToDelete(1) = "Course ID Prefix"
     colsToDelete(2) = "Course Pathway"
     colsToDelete(3) = "Credit Hrs"
-    colsToDelete(7) = "Credit Type"
+    colsToDelete(4) = "Credit Type"
     colsToDelete(5) = "Department"
     colsToDelete(6) = "Division"
     colsToDelete(7) = "FTE"
