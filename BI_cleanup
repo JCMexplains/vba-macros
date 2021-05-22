@@ -9,7 +9,9 @@ Public Sub Format_BI_exports()
     
     If Not Helper_procedures.tableExist(ActiveSheet, "Table1") Then
         ' If there is no Table1, we are either on the wrong sheet or have already run this macro, so exit
-        MsgBox ("This sheet has no Table1 to work on, so this macro didn't do anything")
+        'a MessageBox is actually a number, weirdly. if you want to display any more than just a text string, you must Dim the variable
+        Dim message As Long
+        message = MsgBox("This sheet has no Table1 to work on, so this macro didn't do anything.", vbInformation)
         Exit Sub
     End If
     
