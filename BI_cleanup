@@ -17,7 +17,7 @@ Public Sub Format_BI_exports()
     
     Application.StatusBar = "Macro running. Press Esc to cancel."
     
-    RenameSheet
+    RenameSheet ' Table1 is named ClassListTable now
     
     RenameFile
     
@@ -36,10 +36,11 @@ Public Sub Format_BI_exports()
     'Turn off screen flickering as the macro runs
     Application.ScreenUpdating = False
     
-    'delete the first two rows, which we don't need
-    ' TODO pick the nubmer of rows to delete dynamically--"delete all rows before header"
-    ActiveSheet.Rows("1:2").Delete
-    lastRow = lastRow - 2
+    'delete all the rows before the header
+    Dim headerRow As Long
+    headerRow = ActiveSheet.Range("ClassListTable[#Headers]").Row
+    ActiveSheet.Rows("1:" & (headerRow - 1)).Delete
+    lastRow = lastRow - (headerRow - 1)
     
     'freeze panes
     With ActiveWindow
@@ -208,8 +209,8 @@ Private Sub RenameSheet()
 End Sub
 
 Private Sub RenameFile()
-    Dim originalName As String
-    originalName = ActiveWorkbook.FullName
+'    Dim originalName As String
+'    originalName = ActiveWorkbook.FullName
     
     Dim termNumber As String
     termNumber = ActiveSheet.Range("ClassListTable[[#Headers], [Term]]").Offset(1, 0).Value
