@@ -10,8 +10,7 @@ Public Sub Format_BI_exports()
     If Not Helper_procedures.tableExist(ActiveSheet, "Table1") Then
         ' If there is no Table1, we are either on the wrong sheet or have already run this macro, so exit
         'a MessageBox is actually a number, weirdly. if you want to display any more than just a text string, you must Dim the variable
-        Dim message As Long
-        message = MsgBox("This sheet has no Table1 to work on, so this macro didn't do anything.", vbInformation, "Format BI exports")
+        MsgBox "This sheet has no Table1 to work on, so this macro didn't do anything.", vbInformation, "Format BI exports"
         Exit Sub
     End If
     
@@ -20,6 +19,7 @@ Public Sub Format_BI_exports()
     RenameSheet ' Table1 is named ClassListTable now
     
     RenameFile
+    ' TODO save user search settings and restore them at the end
     
     'Turn off screen flickering as the macro runs
     Application.ScreenUpdating = False
@@ -61,7 +61,7 @@ Public Sub Format_BI_exports()
     'delete some unneeded columns
     'deleting by the name in the header rather than by column number or letter because columns seem to keep getting added to the report
     'listing all the columns we want to delete, omitting the word 'Curriculum' since I already deleted that
-    Dim colsToDelete(15) As String
+    Dim colsToDelete(16) As String
     Dim colName         As Variant
     colsToDelete(0) = "BC Course Discipline"
     colsToDelete(1) = "Course ID Prefix"
@@ -79,6 +79,7 @@ Public Sub Format_BI_exports()
     colsToDelete(13) = "Primary Instructor Type"
     colsToDelete(14) = "Std Cntct Hrs"
     colsToDelete(15) = "SummaryKey"
+    colsToDelete(16) = "Term"
 
     
     For Each colName In colsToDelete
@@ -228,5 +229,4 @@ Private Sub RenameFile()
     ' Kill originalName 'deletes the original file -- works on local folders, won't work on a network folder--why
 
 End Sub
-
 
