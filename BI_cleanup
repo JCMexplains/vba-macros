@@ -33,10 +33,7 @@ Public Sub Format_BI_exports()
     
     With ActiveWorkbook.Sheets("Class sections")
         lastRow = .Cells(ActiveSheet.Rows.Count, 1).End(xlUp).Row
-        'gets the last used row
-        
         lastCol = .Cells(1, ActiveSheet.Columns.Count).End(xlToLeft).Column
-        'gets the last used column
     End With
     
     'freeze panes
@@ -51,7 +48,7 @@ Public Sub Format_BI_exports()
     'changes names of columns to more human-friendly names, replacing anything of the form Curriculum.xyz with xyz
     'documentation for this replace function: https://docs.microsoft.com/en-us/office/vba/api/excel.range.replace
     'vbNullString is preferred over "" for indicating that you are replacing with an empty string
-     ActiveSheet.ListObjects("ClassListTable").HeaderRowRange.Select
+    ActiveSheet.ListObjects("ClassListTable").HeaderRowRange.Select
     Selection.Replace What:="Curriculum.", Replacement:=vbNullString, LookAt:=xlPart, _
                       SearchOrder:=xlByRows, MatchCase:=False, SearchFormat:=False, _
                       ReplaceFormat:=False, FormulaVersion:=xlReplaceFormula2
@@ -205,8 +202,8 @@ Private Sub RenameSheet()
 End Sub
 
 Private Sub RenameFile()
-'    Dim originalName As String
-'    originalName = ActiveWorkbook.FullName
+    '    Dim originalName As String
+    '    originalName = ActiveWorkbook.FullName
     
     Dim termNumber As String
     termNumber = ActiveSheet.Range("ClassListTable[[#Headers], [Term]]").Offset(1, 0).Value
@@ -230,6 +227,6 @@ Private Sub RenameFile()
     ' TODO get this to work--maybe move original file to temp folder then delete?
     ' Kill originalName 'deletes the original file -- works on local folders, won't work on a network folder--why
 
-
 End Sub
+
 
