@@ -203,8 +203,8 @@ Private Sub RenameSheet()
 End Sub
 
 Private Sub RenameFile()
-    '    Dim originalName As String
-    '    originalName = ActiveWorkbook.FullName
+    Dim originalName As String
+    originalName = ActiveWorkbook.FullName
     
     Dim termNumber As String
     termNumber = ActiveSheet.Range("ClassListTable[[#Headers], [Term]]").Offset(1, 0).Value
@@ -226,7 +226,10 @@ Private Sub RenameFile()
     'including FileFormat ensures this will save as xlsx even if it was originally csv
     
     ' TODO get this to work--maybe move original file to temp folder then delete?
-    ' Kill originalName 'deletes the original file -- works on local folders, won't work on a network folder--why
-
+    On Error Resume Next
+    Kill originalName 'deletes the original file -- works on local folders, won't work on a network folder--why
+    On Error GoTo 0
+    
 End Sub
+
 
