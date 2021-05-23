@@ -21,26 +21,23 @@ Public Sub Format_BI_exports()
     
     RenameFile
     
+    'Turn off screen flickering as the macro runs
+    Application.ScreenUpdating = False
+    
+    'delete all the rows before the header row
+    ActiveSheet.Rows("1:" & (ActiveSheet.Range("ClassListTable[#Headers]").Row - 1)).Delete
+    
     ' variables for the last used row and the last used column
     Dim lastRow     As Long
     Dim lastCol     As Long
+    
     With ActiveWorkbook.Sheets("Class sections")
         lastRow = .Cells(ActiveSheet.Rows.Count, 1).End(xlUp).Row
         'gets the last used row
         
-        ' TODO choose header row dynamically
-        lastCol = .Cells(3, ActiveSheet.Columns.Count).End(xlToLeft).Column
-        'gets the last used column. at this point row 3 is the header row, so we look there
+        lastCol = .Cells(1, ActiveSheet.Columns.Count).End(xlToLeft).Column
+        'gets the last used column
     End With
- 
-    'Turn off screen flickering as the macro runs
-    Application.ScreenUpdating = False
-    
-    'delete all the rows before the header
-    Dim headerRow As Long
-    headerRow = ActiveSheet.Range("ClassListTable[#Headers]").Row
-    ActiveSheet.Rows("1:" & (headerRow - 1)).Delete
-    lastRow = lastRow - (headerRow - 1)
     
     'freeze panes
     With ActiveWindow
@@ -51,11 +48,10 @@ Public Sub Format_BI_exports()
         .FreezePanes = True
     End With
     
-    ActiveSheet.ListObjects("ClassListTable").HeaderRowRange.Select
-    
     'changes names of columns to more human-friendly names, replacing anything of the form Curriculum.xyz with xyz
     'documentation for this replace function: https://docs.microsoft.com/en-us/office/vba/api/excel.range.replace
     'vbNullString is preferred over "" for indicating that you are replacing with an empty string
+     ActiveSheet.ListObjects("ClassListTable").HeaderRowRange.Select
     Selection.Replace What:="Curriculum.", Replacement:=vbNullString, LookAt:=xlPart, _
                       SearchOrder:=xlByRows, MatchCase:=False, SearchFormat:=False, _
                       ReplaceFormat:=False, FormulaVersion:=xlReplaceFormula2
