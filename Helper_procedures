@@ -13,6 +13,7 @@ Public Sub SelectColumnFromTable(ByVal tableName As String, ByVal columnHeader A
     Exit Sub
     
 Handler:
+    ' if we somehow raised an error that ISN'T 1004, we still want to crash
     If Err.Number = 1004 Then
         Resume Next
     End If
@@ -25,7 +26,7 @@ Public Sub FixNumberStoredAsText(ByVal sheetName As String)
     Dim firstCounter           As Long
     Dim secondCounter           As Long
     
-    cellsToExamine = ActiveWorkbook.Sheets(sheetName).UsedRange  'UsedRange includes any cell that has ever had a value in it
+    cellsToExamine = ActiveWorkbook.Sheets(sheetName).UsedRange 'UsedRange includes any cell that has ever had a value in it
     
     For firstCounter = 1 To UBound(cellsToExamine, 1) 'the upper bound is built in--Excel knows it
         For secondCounter = 1 To UBound(cellsToExamine, 2)
@@ -52,7 +53,7 @@ Public Sub TrimTrailingZero(ByVal targetColumn As Long, ByVal lastRow As Long)
     Set regexOne = New RegExp
     
     'this regex will match one or more digits followed by a zero, capturing everything before the zero
-    'the dollar sign anchors the match to the end of the string. otherwise we'd get undesired behavior on a number like 13402
+    'the dollar sign anchors the match to the end of the string. otherwise we'd get undesired behavior on a number like 13402 which would become 1342
     regexOne.Pattern = "(\d+)0$"
     
     For firstCounter = 1 To lastRow
@@ -62,10 +63,13 @@ Public Sub TrimTrailingZero(ByVal targetColumn As Long, ByVal lastRow As Long)
 
 End Sub
 
-Public Function tableExist(ByVal Sht As Worksheet, ByVal tblName As String) As Boolean
+Public Function TableExist(ByVal Sht As Worksheet, ByVal tblName As String) As Boolean
     
     On Error Resume Next
-    tableExist = Sht.ListObjects(tblName).Name = tblName
+    TableExist = Sht.ListObjects(tblName).Name = tblName
     On Error GoTo 0
 
 End Function
+
+
+
