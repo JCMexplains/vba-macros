@@ -6,10 +6,10 @@ Public Sub Format_BI_exports()
     
     ' BI_cleanup Macro
     ' Clean up export from Power BI
+    ' written by Jamie Martin
     
-    If Not Helper_procedures.tableExist(ActiveSheet, "Table1") Then
+    If Not Helper_procedures.TableExist(ActiveSheet, "Table1") Then
         ' If there is no Table1, we are either on the wrong sheet or have already run this macro, so exit
-        'a MessageBox is actually a number, weirdly. if you want to display any more than just a text string, you must Dim the variable
         MsgBox "This sheet has no Table1 to work on, so this macro didn't do anything.", vbInformation, "Format BI exports"
         Exit Sub
     End If
@@ -19,7 +19,7 @@ Public Sub Format_BI_exports()
     RenameSheet ' Table1 is named ClassListTable now
     
     RenameFile
-    ' TODO save user search settings and restore them at the end
+    ' TODO save then restore user search settings
     
     'Turn off screen flickering as the macro runs
     Application.ScreenUpdating = False
@@ -49,12 +49,12 @@ Public Sub Format_BI_exports()
     'documentation for this replace function: https://docs.microsoft.com/en-us/office/vba/api/excel.range.replace
     'vbNullString is preferred over "" for indicating that you are replacing with an empty string
     ActiveSheet.ListObjects("ClassListTable").HeaderRowRange.Select
-    Selection.Replace What:="Curriculum.", Replacement:=vbNullString, LookAt:=xlPart, _
+    Selection.Replace what:="Curriculum.", Replacement:=vbNullString, LookAt:=xlPart, _
                       SearchOrder:=xlByRows, MatchCase:=False, SearchFormat:=False, _
                       ReplaceFormat:=False, FormulaVersion:=xlReplaceFormula2
     
     'now replace "Division Department" with a shorter version. Header row is already selected
-    Selection.Replace What:="Division Department", Replacement:="Div Dept", LookAt:=xlPart, _
+    Selection.Replace what:="Division Department", Replacement:="Div Dept", LookAt:=xlPart, _
                       SearchOrder:=xlByRows, MatchCase:=False, SearchFormat:=False, _
                       ReplaceFormat:=False, FormulaVersion:=xlReplaceFormula2
     
@@ -80,7 +80,6 @@ Public Sub Format_BI_exports()
     colsToDelete(14) = "Std Cntct Hrs"
     colsToDelete(15) = "SummaryKey"
     colsToDelete(16) = "Term"
-
     
     For Each colName In colsToDelete
         Helper_procedures.SelectColumnFromTable "ClassListTable", colName
@@ -107,13 +106,13 @@ Public Sub Format_BI_exports()
     'formats instructor names to have a space after the comma
     'the underscore character lets you break a long single-line statement into multiple lines
     Helper_procedures.SelectColumnFromTable "ClassListTable", "Instructor Name"
-    Selection.Replace What:=",", Replacement:=", ", LookAt:=xlPart, _
+    Selection.Replace what:=",", Replacement:=", ", LookAt:=xlPart, _
                       SearchOrder:=xlByRows, MatchCase:=False, SearchFormat:=False, _
                       ReplaceFormat:=False, FormulaVersion:=xlReplaceFormula2
     
     'cleans up Delivery Method names, e.g. from RemoteLearningBlended to Remote Blended
     Helper_procedures.SelectColumnFromTable "ClassListTable", "Delivery Method"
-    Selection.Replace What:="RemoteLearning", Replacement:="Remote ", LookAt:=xlPart, _
+    Selection.Replace what:="RemoteLearning", Replacement:="Remote ", LookAt:=xlPart, _
                       SearchOrder:=xlByRows, MatchCase:=False, SearchFormat:=False, _
                       ReplaceFormat:=False, FormulaVersion:=xlReplaceFormula2
     
@@ -143,17 +142,28 @@ Public Sub Format_BI_exports()
     ' the single quote before the # in Rm # is a special-character escape
     Helper_procedures.TrimTrailingZero ActiveSheet.Range("ClassListTable[[#Headers], [Rm '#]]").Column, lastRow
     
-    'find the column number of the Div Dept column and store it
-    Dim divDeptCol  As Long
-    
-    divDeptCol = ActiveSheet.Range("ClassListTable[[#Headers], [Div Dept]]").Column
-    
+    ' moves Schedule Notes to be the final column of the table
+    ActiveSheet.Range(Cells(1, ActiveSheet.Range("ClassListTable[[#Headers], [Schedule Notes]]").Offset(, 1).Column), Cells(lastRow, lastCol)).Select
+    Selection.Cut
+    ActiveSheet.Range("ClassListTable[[#Headers], [Schedule Notes]]").Select
+    Selection.Insert Shift:=xlToRight
+
+    ' TODO clear clipboard
+
+    'filter at the end, because selecting is hard on filtered sheets
     'unfortunately, Range.AutoFilter only lets you choose the field to filter by using an integer offset, so we use the integer we found earlier
-    ActiveWorkbook.Sheets("Class sections").ListObjects("ClassListTable").Range.AutoFilter Field:=divDeptCol, Criteria1:=Array("ENG1BASE", "ENG1COPR", "ENG5BASE"), Operator:=xlFilterValues
+    With ActiveWorkbook.Sheets("Class sections").ListObjects("ClassListTable").Range
+        .AutoFilter Field:=ActiveSheet.Range("ClassListTable[[#Headers], [Div Dept]]").Column, Criteria1:=Array("ENG1BASE", "ENG1COPR", "ENG5BASE"), Operator:=xlFilterValues
+    End With
     
     'how to select columns by number rather than by letter (doing it by letter is much easier!)
+    'Columns(1) specifies the first column; Resize(, x) expands the selection to a total width of x columns
+
     'autofits selected columns
     ActiveSheet.Columns(1).Resize(, lastCol).EntireColumn.AutoFit
+    
+    ' scroll towards the upper left
+    ActiveWindow.LargeScroll up:=1, toLeft:=1
     
     'Curt Frye says it's good style to turn screen updating back on at the end of a macro, even though it's technically not necessary
     Application.ScreenUpdating = True
@@ -163,7 +173,7 @@ Public Sub Format_BI_exports()
     
 End Sub
 
-Public Function SortString(ByVal toSort As String) As String
+Private Function SortString(ByVal toSort As String) As String
     Dim substrings       As Variant
     Dim commaDelim As String
     commaDelim = ","
@@ -176,7 +186,7 @@ Public Function SortString(ByVal toSort As String) As String
     SortString = Join(substrings, commaDelim & " ")
 End Function
 
-Public Function SortArray(ByVal substrings As Variant) As Variant
+Private Function SortArray(ByVal substrings As Variant) As Variant
     Dim temp        As Variant
     Dim firstCounter           As Long
     Dim secondCounter           As Long
@@ -203,8 +213,6 @@ Private Sub RenameSheet()
 End Sub
 
 Private Sub RenameFile()
-    Dim originalName As String
-    originalName = ActiveWorkbook.FullName
     
     Dim termNumber As String
     termNumber = ActiveSheet.Range("ClassListTable[[#Headers], [Term]]").Offset(1, 0).Value
@@ -222,13 +230,8 @@ Private Sub RenameFile()
     Dim newName     As String
     newName = Application.ActiveWorkbook.Path & "/" & termName & " " & termNumber & " BI schedule " & MonthName(Month(Date)) & " " & Day(Date) & ".xlsx"
     
-    ActiveWorkbook.SaveAs Filename:=newName, FileFormat:=xlOpenXMLWorkbook
     'including FileFormat ensures this will save as xlsx even if it was originally csv
-    
-    ' TODO get this to work--maybe move original file to temp folder then delete?
-    On Error Resume Next
-    Kill originalName 'deletes the original file -- works on local folders, won't work on a network folder--why
-    On Error GoTo 0
+    ActiveWorkbook.SaveAs Filename:=newName, FileFormat:=xlOpenXMLWorkbook
     
 End Sub
 
