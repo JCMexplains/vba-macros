@@ -143,7 +143,7 @@ Public Sub Format_BI_exports()
     Helper_procedures.TrimTrailingZero ActiveSheet.Range("ClassListTable[[#Headers], [Rm '#]]").Column, lastRow
     
     ' moves Schedule Notes to be the final column of the table
-    ActiveSheet.Range(Cells(1, ActiveSheet.Range("ClassListTable[[#Headers], [Schedule Notes]]").Offset(, 1).Column), Cells(lastRow, lastCol)).Select
+    ActiveSheet.Range(ActiveSheet.Cells(1, ActiveSheet.Range("ClassListTable[[#Headers], [Schedule Notes]]").Offset(, 1).Column), ActiveSheet.Cells(lastRow, lastCol)).Select
     Selection.Cut
     ActiveSheet.Range("ClassListTable[[#Headers], [Schedule Notes]]").Select
     Selection.Insert Shift:=xlToRight
