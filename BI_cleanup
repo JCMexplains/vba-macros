@@ -148,7 +148,8 @@ Public Sub Format_BI_exports()
     ActiveSheet.Range("ClassListTable[[#Headers], [Schedule Notes]]").Select
     Selection.Insert Shift:=xlToRight
 
-    ' TODO clear clipboard
+    'clear the clipboard
+    Application.CutCopyMode = False
 
     'filter at the end, because selecting is hard on filtered sheets
     'unfortunately, Range.AutoFilter only lets you choose the field to filter by using an integer offset, so we use the integer we found earlier
