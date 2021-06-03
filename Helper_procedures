@@ -80,6 +80,8 @@ Public Sub OpenFile()
     FileToOpen = Application.GetOpenFilename(MultiSelect:=False, FileFilter:="Excel Files (*.xls*),*xls*,CSV Files (*.csv*),*csv*")
     If FileToOpen <> False Then
         Set OpenBook = Application.Workbooks.Open(FileToOpen)
+    Else
+        End
     End If
     
 End Sub
