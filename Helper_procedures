@@ -43,6 +43,11 @@ Public Sub FixNumberStoredAsText(ByVal sheetName As String)
     
 End Sub
 
+Public Sub FixNumberStoredAsTextWrapper()
+' allows me to call FixNumberStoredAsText from the macro window and run it on the active sheet
+    FixNumberStoredAsText (ActiveSheet.Name)
+End Sub
+
 Public Sub TrimTrailingZero(ByVal targetColumn As Long, ByVal lastRow As Long)
     ' As Long throws an error if the argument coming in is not an integer
 
