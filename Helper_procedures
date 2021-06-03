@@ -71,5 +71,16 @@ Public Function TableExist(ByVal Sht As Worksheet, ByVal tblName As String) As B
 
 End Function
 
-
+Public Sub OpenFile()
+' dimming as Variant because returns a Boolean False if user clicks cancel, so String isn't what we want
+' https://www.youtube.com/watch?v=h_sC6Uwtwxk&ab_channel=LeilaGharani
+    Dim FileToOpen As Variant
+    Dim OpenBook As Workbook
+    
+    FileToOpen = Application.GetOpenFilename(MultiSelect:=False, FileFilter:="Excel Files (*.xls*),*xls*,CSV Files (*.csv*),*csv*")
+    If FileToOpen <> False Then
+        Set OpenBook = Application.Workbooks.Open(FileToOpen)
+    End If
+    
+End Sub
 
