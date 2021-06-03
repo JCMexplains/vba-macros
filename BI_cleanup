@@ -6,7 +6,8 @@ Public Sub Format_BI_exports()
     
     ' BI_cleanup Macro
     ' Clean up export from Power BI
-    ' written by Jamie Martin
+    
+    Helper_procedures.OpenFile
     
     If Not Helper_procedures.TableExist(ActiveSheet, "Table1") Then
         ' If there is no Table1, we are either on the wrong sheet or have already run this macro, so exit
@@ -16,10 +17,9 @@ Public Sub Format_BI_exports()
     
     Application.StatusBar = "Macro running. Press Esc to cancel."
     
-    RenameSheet ' Table1 is named ClassListTable now
+    RenameSheet                                  ' Table1 is named ClassListTable now
     
     RenameFile
-    ' TODO save then restore user search settings
     
     'Turn off screen flickering as the macro runs
     Application.ScreenUpdating = False
@@ -151,20 +151,25 @@ Public Sub Format_BI_exports()
     'clear the clipboard
     Application.CutCopyMode = False
 
-    'filter at the end, because selecting is hard on filtered sheets
-    'unfortunately, Range.AutoFilter only lets you choose the field to filter by using an integer offset, so we use the integer we found earlier
+'    'filter at the end, because selecting is hard on filtered sheets
+'    'unfortunately, Range.AutoFilter only lets you choose the field to filter by using an integer offset, so we use the integer we found earlier
     With ActiveWorkbook.Sheets("Class sections").ListObjects("ClassListTable").Range
         .AutoFilter Field:=ActiveSheet.Range("ClassListTable[[#Headers], [Div Dept]]").Column, Criteria1:=Array("ENG1BASE", "ENG1COPR", "ENG5BASE"), Operator:=xlFilterValues
     End With
     
     'how to select columns by number rather than by letter (doing it by letter is much easier!)
     'Columns(1) specifies the first column; Resize(, x) expands the selection to a total width of x columns
-
-    'autofits selected columns
+    'autofits all columns from 1 through lastCol
     ActiveSheet.Columns(1).Resize(, lastCol).EntireColumn.AutoFit
     
     ' scroll towards the upper left
     ActiveWindow.LargeScroll up:=1, toLeft:=1
+    
+    ' doing a phantom Replace to reset the Replace function to the default values it has when Excel is opened
+    ' it would be even cooler to set it to whatever the user had it at when they invoked the macro, but I think that's impossible
+    ActiveCell.Replace what:=vbNullString, Replacement:=vbNullString, LookAt:=xlPart, _
+                       SearchOrder:=xlByRows, MatchCase:=False, SearchFormat:=False, _
+                       ReplaceFormat:=False, FormulaVersion:=xlReplaceFormula2
     
     'Curt Frye says it's good style to turn screen updating back on at the end of a macro, even though it's technically not necessary
     Application.ScreenUpdating = True
