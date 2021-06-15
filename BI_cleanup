@@ -6,8 +6,9 @@ Public Sub Format_BI_exports()
     
     ' BI_cleanup Macro
     ' Clean up export from Power BI
+    ' written by Jamie Martin
     
-    Helper_procedures.OpenFile
+    OpenFile
     
     If Not Helper_procedures.TableExist(ActiveSheet, "Table1") Then
         ' If there is no Table1, we are either on the wrong sheet or have already run this macro, so exit
@@ -82,39 +83,46 @@ Public Sub Format_BI_exports()
     colsToDelete(16) = "Term"
     
     For Each colName In colsToDelete
-        Helper_procedures.SelectColumnFromTable "ClassListTable", colName
-        Selection.Delete Shift:=xlToLeft
-        lastCol = lastCol - 1                    'we now have one fewer used column, so we can decrement this variable
+        If Helper_procedures.SelectColumnFromTable("ClassListTable", colName) Then
+            Selection.Delete Shift:=xlToLeft
+            lastCol = lastCol - 1                'we now have one fewer used column, so we can decrement this variable
+        End If
     Next colName
     
     'calling another Sub, which goes through all cells and changes any "numbers stored as text" to regular numbers
     Helper_procedures.FixNumberStoredAsText ("Class sections")
     
     'select the Sess column and format it
-    Helper_procedures.SelectColumnFromTable "ClassListTable", "Sess"
-    Selection.FormatConditions.AddDatabar
-    With Selection.FormatConditions(1)
-        .MinPoint.Modify newtype:=xlConditionValueAutomaticMin
-        .MaxPoint.Modify newtype:=xlConditionValueAutomaticMax
-        .BarColor.Color = 2668287
-    End With
+    If Helper_procedures.SelectColumnFromTable("ClassListTable", "Sess") Then
+        Selection.FormatConditions.AddDatabar
+        With Selection.FormatConditions(1)
+            .MinPoint.Modify newtype:=xlConditionValueAutomaticMin
+            .MaxPoint.Modify newtype:=xlConditionValueAutomaticMax
+            .BarColor.Color = 2668287
+        End With
+    End If
     
-    'select the Enrolled column and format it
-    Helper_procedures.SelectColumnFromTable "ClassListTable", "Enrolled"
-    Selection.FormatConditions.AddColorScale ColorScaleType:=3
+    'select the Enrolled column and format it; depending on how we exported (as "summarized" or "underlying"), this col may have two different names
+    If Helper_procedures.SelectColumnFromTable("ClassListTable", "Enrolled") Then
+        Selection.FormatConditions.AddColorScale ColorScaleType:=3
+    ElseIf Helper_procedures.SelectColumnFromTable("ClassListTable", "Sum of Enrolled") Then
+        Selection.FormatConditions.AddColorScale ColorScaleType:=3
+    End If
     
     'formats instructor names to have a space after the comma
     'the underscore character lets you break a long single-line statement into multiple lines
-    Helper_procedures.SelectColumnFromTable "ClassListTable", "Instructor Name"
-    Selection.Replace what:=",", Replacement:=", ", LookAt:=xlPart, _
-                      SearchOrder:=xlByRows, MatchCase:=False, SearchFormat:=False, _
-                      ReplaceFormat:=False, FormulaVersion:=xlReplaceFormula2
+    If Helper_procedures.SelectColumnFromTable("ClassListTable", "Instructor Name") Then
+        Selection.Replace what:=",", Replacement:=", ", LookAt:=xlPart, _
+                          SearchOrder:=xlByRows, MatchCase:=False, SearchFormat:=False, _
+                          ReplaceFormat:=False, FormulaVersion:=xlReplaceFormula2
+    End If
     
     'cleans up Delivery Method names, e.g. from RemoteLearningBlended to Remote Blended
-    Helper_procedures.SelectColumnFromTable "ClassListTable", "Delivery Method"
-    Selection.Replace what:="RemoteLearning", Replacement:="Remote ", LookAt:=xlPart, _
-                      SearchOrder:=xlByRows, MatchCase:=False, SearchFormat:=False, _
-                      ReplaceFormat:=False, FormulaVersion:=xlReplaceFormula2
+    If Helper_procedures.SelectColumnFromTable("ClassListTable", "Delivery Method") Then
+        Selection.Replace what:="RemoteLearning", Replacement:="Remote ", LookAt:=xlPart, _
+                          SearchOrder:=xlByRows, MatchCase:=False, SearchFormat:=False, _
+                          ReplaceFormat:=False, FormulaVersion:=xlReplaceFormula2
+    End If
     
     'sort by instructor name
     With ActiveWorkbook.Worksheets("Class sections").ListObjects("ClassListTable").Sort
@@ -131,11 +139,12 @@ Public Sub Format_BI_exports()
     Dim cellUnderInspection As Range
     Dim currentCellSorted As String
     
-    Helper_procedures.SelectColumnFromTable "ClassListTable", "Designator List"
-    For Each cellUnderInspection In Selection.Cells()
-        currentCellSorted = SortString(cellUnderInspection.Value)
-        cellUnderInspection.Value = currentCellSorted
-    Next
+    If Helper_procedures.SelectColumnFromTable("ClassListTable", "Designator List") Then
+        For Each cellUnderInspection In Selection.Cells()
+            currentCellSorted = SortString(cellUnderInspection.Value)
+            cellUnderInspection.Value = currentCellSorted
+        Next
+    End If
 
     ' calls a Sub that will remove the trailing zero from room numbers
     ' the first argument is the column number of the column named "Rm #"
@@ -143,19 +152,19 @@ Public Sub Format_BI_exports()
     Helper_procedures.TrimTrailingZero ActiveSheet.Range("ClassListTable[[#Headers], [Rm '#]]").Column, lastRow
     
     ' moves Schedule Notes to be the final column of the table
-    ActiveSheet.Range(ActiveSheet.Cells(1, ActiveSheet.Range("ClassListTable[[#Headers], [Schedule Notes]]").Offset(, 1).Column), ActiveSheet.Cells(lastRow, lastCol)).Select
-    Selection.Cut
-    ActiveSheet.Range("ClassListTable[[#Headers], [Schedule Notes]]").Select
-    Selection.Insert Shift:=xlToRight
+    '    ActiveSheet.Range(ActiveSheet.Cells(1, ActiveSheet.Range("ClassListTable[[#Headers], [Schedule Notes]]").Offset(, 1).Column), ActiveSheet.Cells(lastRow, lastCol)).Select
+    '    Selection.Cut
+    '    ActiveSheet.Range("ClassListTable[[#Headers], [Schedule Notes]]").Select
+    '    Selection.Insert Shift:=xlToRight
 
     'clear the clipboard
     Application.CutCopyMode = False
 
-'    'filter at the end, because selecting is hard on filtered sheets
-'    'unfortunately, Range.AutoFilter only lets you choose the field to filter by using an integer offset, so we use the integer we found earlier
-    With ActiveWorkbook.Sheets("Class sections").ListObjects("ClassListTable").Range
-        .AutoFilter Field:=ActiveSheet.Range("ClassListTable[[#Headers], [Div Dept]]").Column, Criteria1:=Array("ENG1BASE", "ENG1COPR", "ENG5BASE"), Operator:=xlFilterValues
-    End With
+    '    'filter at the end, because selecting is hard on filtered sheets
+    '    'unfortunately, Range.AutoFilter only lets you choose the field to filter by using an integer offset, so we use the integer we found earlier
+    '    With ActiveWorkbook.Sheets("Class sections").ListObjects("ClassListTable").Range
+    '        .AutoFilter Field:=ActiveSheet.Range("ClassListTable[[#Headers], [Div Dept]]").Column, Criteria1:=Array("ENG1BASE", "ENG1COPR", "ENG5BASE"), Operator:=xlFilterValues
+    '    End With
     
     'how to select columns by number rather than by letter (doing it by letter is much easier!)
     'Columns(1) specifies the first column; Resize(, x) expands the selection to a total width of x columns
@@ -238,6 +247,21 @@ Private Sub RenameFile()
     
     'including FileFormat ensures this will save as xlsx even if it was originally csv
     ActiveWorkbook.SaveAs Filename:=newName, FileFormat:=xlOpenXMLWorkbook
+    
+End Sub
+
+Private Sub OpenFile()
+    ' dimming as Variant because returns a Boolean False if user clicks cancel, so String isn't what we want
+    ' https://www.youtube.com/watch?v=h_sC6Uwtwxk&ab_channel=LeilaGharani
+    Dim FileToOpen As Variant
+    Dim OpenBook As Workbook
+    
+    FileToOpen = Application.GetOpenFilename(MultiSelect:=False, FileFilter:="Excel Files (*.xls*),*xls*,CSV Files (*.csv*),*csv*")
+    If FileToOpen <> False Then
+        Set OpenBook = Application.Workbooks.Open(FileToOpen)
+    Else
+        End
+    End If
     
 End Sub
 
