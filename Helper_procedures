@@ -1,7 +1,7 @@
 '@Folder("Helpers")
 Option Explicit
 
-Public Sub SelectColumnFromTable(ByVal tableName As String, ByVal columnHeader As String)
+Public Function SelectColumnFromTable(ByVal tableName As String, ByVal columnHeader As String) As Boolean
     
     Dim structuredRefString As String
     
@@ -10,15 +10,15 @@ Public Sub SelectColumnFromTable(ByVal tableName As String, ByVal columnHeader A
     ' error handling--if the header name I am looking for doesn't exist, a 1004 error will be raised
     On Error GoTo Handler
     ActiveSheet.Range(structuredRefString).Select
-    Exit Sub
+    SelectColumnFromTable = True
     
 Handler:
     ' if we somehow raised an error that ISN'T 1004, we still want to crash
     If Err.Number = 1004 Then
-        Resume Next
+        SelectColumnFromTable = False
     End If
     
-End Sub
+End Function
 
 Public Sub FixNumberStoredAsText(ByVal sheetName As String)
     
@@ -41,11 +41,6 @@ Public Sub FixNumberStoredAsText(ByVal sheetName As String)
         Next secondCounter
     Next firstCounter
     
-End Sub
-
-Public Sub FixNumberStoredAsTextWrapper()
-' allows me to call FixNumberStoredAsText from the macro window and run it on the active sheet
-    FixNumberStoredAsText (ActiveSheet.Name)
 End Sub
 
 Public Sub TrimTrailingZero(ByVal targetColumn As Long, ByVal lastRow As Long)
@@ -75,19 +70,4 @@ Public Function TableExist(ByVal Sht As Worksheet, ByVal tblName As String) As B
     On Error GoTo 0
 
 End Function
-
-Public Sub OpenFile()
-' dimming as Variant because returns a Boolean False if user clicks cancel, so String isn't what we want
-' https://www.youtube.com/watch?v=h_sC6Uwtwxk&ab_channel=LeilaGharani
-    Dim FileToOpen As Variant
-    Dim OpenBook As Workbook
-    
-    FileToOpen = Application.GetOpenFilename(MultiSelect:=False, FileFilter:="Excel Files (*.xls*),*xls*,CSV Files (*.csv*),*csv*")
-    If FileToOpen <> False Then
-        Set OpenBook = Application.Workbooks.Open(FileToOpen)
-    Else
-        End
-    End If
-    
-End Sub
 
