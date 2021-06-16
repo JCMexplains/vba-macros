@@ -151,11 +151,14 @@ Public Sub Format_BI_exports()
     ' the single quote before the # in Rm # is a special-character escape
     Helper_procedures.TrimTrailingZero ActiveSheet.Range("ClassListTable[[#Headers], [Rm '#]]").Column, lastRow
     
-    ' moves Schedule Notes to be the final column of the table
-    '    ActiveSheet.Range(ActiveSheet.Cells(1, ActiveSheet.Range("ClassListTable[[#Headers], [Schedule Notes]]").Offset(, 1).Column), ActiveSheet.Cells(lastRow, lastCol)).Select
-    '    Selection.Cut
-    '    ActiveSheet.Range("ClassListTable[[#Headers], [Schedule Notes]]").Select
-    '    Selection.Insert Shift:=xlToRight
+    ' moves Schedule Notes to be the final column of the table, if it isn't already
+    If lastCol > ActiveSheet.Range("ClassListTable[[#Headers], [Schedule Notes]]").Column Then
+        ActiveSheet.Range(ActiveSheet.Cells(1, ActiveSheet.Range("ClassListTable[[#Headers], [Schedule Notes]]").Offset(, 1).Column), ActiveSheet.Cells(lastRow, lastCol)).Select
+        Selection.Cut
+        ActiveSheet.Range("ClassListTable[[#Headers], [Schedule Notes]]").Select
+        Selection.Insert Shift:=xlToRight
+    End If
+
 
     'clear the clipboard
     Application.CutCopyMode = False
