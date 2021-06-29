@@ -62,7 +62,7 @@ Public Sub Format_BI_exports()
     'delete some unneeded columns
     'deleting by the name in the header rather than by column number or letter because columns seem to keep getting added to the report
     'listing all the columns we want to delete, omitting the word 'Curriculum' since I already deleted that
-    Dim colsToDelete(16) As String
+    Dim colsToDelete(15) As String
     Dim colName         As Variant
     colsToDelete(0) = "BC Course Discipline"
     colsToDelete(1) = "Course ID Prefix"
@@ -78,7 +78,6 @@ Public Sub Format_BI_exports()
     colsToDelete(11) = "Paid FTE"
     colsToDelete(12) = "Primary Instructor ID"
     colsToDelete(13) = "Primary Instructor Type"
-    colsToDelete(14) = "Std Cntct Hrs"
     colsToDelete(15) = "SummaryKey"
     colsToDelete(16) = "Term"
     
