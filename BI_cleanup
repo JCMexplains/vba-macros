@@ -78,8 +78,8 @@ Public Sub Format_BI_exports()
     colsToDelete(11) = "Paid FTE"
     colsToDelete(12) = "Primary Instructor ID"
     colsToDelete(13) = "Primary Instructor Type"
-    colsToDelete(15) = "SummaryKey"
-    colsToDelete(16) = "Term"
+    colsToDelete(14) = "SummaryKey"
+    colsToDelete(15) = "Term"
     
     For Each colName In colsToDelete
         If Helper_procedures.SelectColumnFromTable("ClassListTable", colName) Then
