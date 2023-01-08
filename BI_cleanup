@@ -64,7 +64,7 @@ Public Sub Format_BI_exports()
     'listing all the columns we want to delete, omitting the word 'Curriculum' since I already deleted that
     Dim colsToDelete() As String
     Dim colName         As Variant
-    ReDim colsToDelete(19)
+    ReDim colsToDelete(27)
     colsToDelete(0) = "BC Course Discipline"
     colsToDelete(1) = "Course ID Prefix"
     colsToDelete(2) = "Course Pathway"
@@ -84,6 +84,14 @@ Public Sub Format_BI_exports()
     colsToDelete(16) = "CourseTermKey"
     colsToDelete(17) = "Random"
     colsToDelete(18) = "Sort"
+    colsToDelete(19) = "Fees"
+    colsToDelete(20) = "Cost Center"
+    colsToDelete(21) = "Primary Instructor Job Profile"
+    colsToDelete(22) = "ClassFilter"
+    colsToDelete(23) = "Credit Non Credit Vocational"
+    colsToDelete(24) = "Class Status"
+    colsToDelete(25) = "Course Description"
+    colsToDelete(26) = "Campus"
     
     For Each colName In colsToDelete
         If Helper_procedures.SelectColumnFromTable("ClassListTable", colName) Then
