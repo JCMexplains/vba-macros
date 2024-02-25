@@ -6,7 +6,6 @@ Public Sub Format_BI_exports()
     
     ' BI_cleanup Macro
     ' Clean up export from Power BI
-    ' written by Jamie Martin
     
     OpenFile
     
@@ -194,7 +193,7 @@ Public Sub Format_BI_exports()
                        SearchOrder:=xlByRows, MatchCase:=False, SearchFormat:=False, _
                        ReplaceFormat:=False, FormulaVersion:=xlReplaceFormula2
     
-    'Curt Frye says it's good style to turn screen updating back on at the end of a macro, even though it's technically not necessary
+    ' it's good style to turn screen updating back on at the end of a macro, even though it's technically not necessary
     Application.ScreenUpdating = True
     
     'setting the status bar back to blank
